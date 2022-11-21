@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP TB6612FNG_Board
+D Driver IC for Dual DC motor, SSOP-24
+K H-bridge motor driver
+F https://toshiba.semicon-storage.com/us/product/linear/motordriver/detail.TB6612FNG.html
+$ENDCMP
+#
+#End Doc Library

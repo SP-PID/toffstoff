@@ -1,0 +1,763 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L MCU_Module2:Metro_M4_Airlift A1
+U 1 1 63077A48
+P 6050 2900
+F 0 "A1" V 6050 2900 50  0000 C CNN
+F 1 "Metro_M4_Airlift" V 5900 2900 50  0000 C CNN
+F 2 "Module:Arduino_UNO_R3" H 6050 2900 50  0001 C CIN
+F 3 "https://www.arduino.cc/en/Main/arduinoBoardUno" H 6050 2900 50  0001 C CNN
+	1    6050 2900
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0101
+U 1 1 6307B262
+P 6050 4200
+F 0 "#PWR0101" H 6050 3950 50  0001 C CNN
+F 1 "GND" H 6055 4027 50  0000 C CNN
+F 2 "" H 6050 4200 50  0001 C CNN
+F 3 "" H 6050 4200 50  0001 C CNN
+	1    6050 4200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6050 4200 6050 4100
+Wire Wire Line
+	6050 4100 6150 4100
+Wire Wire Line
+	6150 4100 6150 4000
+Wire Wire Line
+	6050 4000 6050 4100
+Connection ~ 6050 4100
+Wire Wire Line
+	5950 4000 5950 4100
+Wire Wire Line
+	5950 4100 6050 4100
+$Comp
+L power:+3.3V #PWR0102
+U 1 1 6307C5E8
+P 6150 1800
+F 0 "#PWR0102" H 6150 1650 50  0001 C CNN
+F 1 "+3.3V" H 6165 1973 50  0000 C CNN
+F 2 "" H 6150 1800 50  0001 C CNN
+F 3 "" H 6150 1800 50  0001 C CNN
+	1    6150 1800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6150 1900 6150 1800
+$Comp
+L power:GND #PWR0103
+U 1 1 630842D8
+P 4550 2650
+F 0 "#PWR0103" H 4550 2400 50  0001 C CNN
+F 1 "GND" H 4555 2477 50  0000 C CNN
+F 2 "" H 4550 2650 50  0001 C CNN
+F 3 "" H 4550 2650 50  0001 C CNN
+	1    4550 2650
+	1    0    0    -1  
+$EndComp
+Text Notes 4050 1200 0    50   ~ 0
+Pull Up resistor internally on microcontroller
+$Comp
+L Sensor_Pressure2:MPL3115A2_modoule U1
+U 1 1 63089222
+P 8400 2200
+F 0 "U1" H 8778 2051 50  0000 L CNN
+F 1 "MPL3115A2_modoule" H 8778 1960 50  0000 L CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x07_P2.54mm_Vertical" H 8500 2500 50  0001 C CNN
+F 3 "" H 8500 2500 50  0001 C CNN
+	1    8400 2200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	8250 2600 7500 2600
+Wire Wire Line
+	7500 2600 7500 3250
+$Comp
+L power:+3.3V #PWR0104
+U 1 1 6308B5C2
+P 8200 2050
+F 0 "#PWR0104" H 8200 1900 50  0001 C CNN
+F 1 "+3.3V" H 8215 2223 50  0000 C CNN
+F 2 "" H 8200 2050 50  0001 C CNN
+F 3 "" H 8200 2050 50  0001 C CNN
+	1    8200 2050
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0105
+U 1 1 6308C0A3
+P 8100 2350
+F 0 "#PWR0105" H 8100 2100 50  0001 C CNN
+F 1 "GND" H 8105 2177 50  0000 C CNN
+F 2 "" H 8100 2350 50  0001 C CNN
+F 3 "" H 8100 2350 50  0001 C CNN
+	1    8100 2350
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	8100 2200 8250 2200
+Wire Wire Line
+	8100 2200 8100 2350
+Wire Wire Line
+	8250 2100 8200 2100
+Wire Wire Line
+	8200 2100 8200 2050
+$Comp
+L Sensor_Pressure2:SSD1306_Display U2
+U 1 1 6308E1FE
+P 8350 2850
+F 0 "U2" H 9278 2546 50  0000 L CNN
+F 1 "SSD1306_Display" H 9278 2455 50  0000 L CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical" H 8850 2500 50  0001 C CNN
+F 3 "" H 8850 2500 50  0001 C CNN
+	1    8350 2850
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	8250 2700 7600 2700
+Wire Wire Line
+	7600 2700 7600 3350
+Wire Wire Line
+	8250 3250 7500 3250
+Connection ~ 7500 3250
+Wire Wire Line
+	7500 3250 7500 3700
+Wire Wire Line
+	8250 3350 7600 3350
+Connection ~ 7600 3350
+Wire Wire Line
+	7600 3350 7600 3600
+$Comp
+L power:+3.3V #PWR0106
+U 1 1 63092C40
+P 8100 2950
+F 0 "#PWR0106" H 8100 2800 50  0001 C CNN
+F 1 "+3.3V" H 8115 3123 50  0000 C CNN
+F 2 "" H 8100 2950 50  0001 C CNN
+F 3 "" H 8100 2950 50  0001 C CNN
+	1    8100 2950
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:GND #PWR0107
+U 1 1 6309379C
+P 8050 3150
+F 0 "#PWR0107" H 8050 2900 50  0001 C CNN
+F 1 "GND" H 8055 2977 50  0000 C CNN
+F 2 "" H 8050 3150 50  0001 C CNN
+F 3 "" H 8050 3150 50  0001 C CNN
+	1    8050 3150
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	8050 3150 8250 3150
+Wire Wire Line
+	8100 2950 8200 2950
+Wire Wire Line
+	8200 2950 8200 3050
+Wire Wire Line
+	8200 3050 8250 3050
+$Comp
+L Sensor_Pressure2:TCS34725_RGBsensor U3
+U 1 1 6309E298
+P 8350 3500
+F 0 "U3" H 8928 3051 50  0000 L CNN
+F 1 "TCS34725_RGBsensor" H 8928 2960 50  0000 L CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x07_P2.54mm_Vertical" H 8650 3050 50  0001 C CNN
+F 3 "" H 8650 3050 50  0001 C CNN
+	1    8350 3500
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+3.3V #PWR0108
+U 1 1 630A02D1
+P 8100 3600
+F 0 "#PWR0108" H 8100 3450 50  0001 C CNN
+F 1 "+3.3V" H 8115 3773 50  0000 C CNN
+F 2 "" H 8100 3600 50  0001 C CNN
+F 3 "" H 8100 3600 50  0001 C CNN
+	1    8100 3600
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:GND #PWR0109
+U 1 1 630A02D7
+P 8050 3800
+F 0 "#PWR0109" H 8050 3550 50  0001 C CNN
+F 1 "GND" H 8055 3627 50  0000 C CNN
+F 2 "" H 8050 3800 50  0001 C CNN
+F 3 "" H 8050 3800 50  0001 C CNN
+	1    8050 3800
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	8050 3800 8250 3800
+Wire Wire Line
+	8100 3600 8200 3600
+Wire Wire Line
+	8200 3600 8200 3700
+Wire Wire Line
+	8200 3700 8250 3700
+Wire Wire Line
+	8250 4000 7500 4000
+Wire Wire Line
+	7500 4000 7500 3700
+Connection ~ 7500 3700
+Wire Wire Line
+	8250 4100 7600 4100
+Wire Wire Line
+	7600 4100 7600 3600
+Connection ~ 7600 3600
+$Comp
+L Sensor_Pressure2:2Y0A02_F22 U4
+U 1 1 630A2C78
+P 7800 1250
+F 0 "U4" H 8478 1001 50  0000 L CNN
+F 1 "2Y0A02_F22-IR distance_sensor" H 7700 1200 50  0000 L CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical" H 8200 950 50  0001 C CNN
+F 3 "" H 8200 950 50  0001 C CNN
+	1    7800 1250
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0110
+U 1 1 630A4E4B
+P 7500 1550
+F 0 "#PWR0110" H 7500 1300 50  0001 C CNN
+F 1 "GND" H 7505 1377 50  0000 C CNN
+F 2 "" H 7500 1550 50  0001 C CNN
+F 3 "" H 7500 1550 50  0001 C CNN
+	1    7500 1550
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	7500 1550 7700 1550
+Wire Wire Line
+	7650 1350 7650 1450
+Wire Wire Line
+	7650 1450 7700 1450
+Wire Wire Line
+	7700 1650 6850 1650
+Wire Wire Line
+	6850 1650 6850 2900
+Wire Wire Line
+	6850 2900 6550 2900
+$Comp
+L power:+5V #PWR0111
+U 1 1 6318B7F2
+P 6350 1800
+F 0 "#PWR0111" H 6350 1650 50  0001 C CNN
+F 1 "+5V" H 6365 1973 50  0000 C CNN
+F 2 "" H 6350 1800 50  0001 C CNN
+F 3 "" H 6350 1800 50  0001 C CNN
+	1    6350 1800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6250 1900 6250 1850
+Wire Wire Line
+	6250 1850 6350 1850
+Wire Wire Line
+	6350 1850 6350 1800
+$Comp
+L power:+5V #PWR0112
+U 1 1 6318DB16
+P 7500 1350
+F 0 "#PWR0112" H 7500 1200 50  0001 C CNN
+F 1 "+5V" H 7515 1523 50  0000 C CNN
+F 2 "" H 7500 1350 50  0001 C CNN
+F 3 "" H 7500 1350 50  0001 C CNN
+	1    7500 1350
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	7650 1350 7500 1350
+$Comp
+L power:+BATT #PWR0113
+U 1 1 63190C3E
+P 5900 1800
+F 0 "#PWR0113" H 5900 1650 50  0001 C CNN
+F 1 "+BATT" H 5915 1973 50  0000 C CNN
+F 2 "" H 5900 1800 50  0001 C CNN
+F 3 "" H 5900 1800 50  0001 C CNN
+	1    5900 1800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5950 1900 5950 1850
+Wire Wire Line
+	5950 1850 5900 1850
+Wire Wire Line
+	5900 1850 5900 1800
+$Comp
+L Custom_for_mech1:Micromotr_encoder M2
+U 1 1 6319780B
+P 3050 4500
+F 0 "M2" H 3892 3585 50  0000 C CNN
+F 1 "Micromotr_encoder" H 3892 3676 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical" H 4150 4050 50  0001 C CNN
+F 3 "" H 4150 4050 50  0001 C CNN
+	1    3050 4500
+	-1   0    0    1   
+$EndComp
+$Comp
+L Custom_for_mech1:Micromotr_encoder M1
+U 1 1 631991BF
+P 3050 5500
+F 0 "M1" H 3892 4585 50  0000 C CNN
+F 1 "Micromotr_encoder" H 3892 4676 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical" H 4150 5050 50  0001 C CNN
+F 3 "" H 4150 5050 50  0001 C CNN
+	1    3050 5500
+	-1   0    0    1   
+$EndComp
+$Comp
+L power:GND #PWR0114
+U 1 1 631BD868
+P 2850 5400
+F 0 "#PWR0114" H 2850 5150 50  0001 C CNN
+F 1 "GND" H 2855 5227 50  0000 C CNN
+F 2 "" H 2850 5400 50  0001 C CNN
+F 3 "" H 2850 5400 50  0001 C CNN
+	1    2850 5400
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2850 5400 2850 4900
+Wire Wire Line
+	2850 4900 2700 4900
+Wire Wire Line
+	2850 4900 2850 3900
+Wire Wire Line
+	2850 3900 2700 3900
+Connection ~ 2850 4900
+$Comp
+L power:+3.3V #PWR0115
+U 1 1 631C3DD3
+P 2900 3650
+F 0 "#PWR0115" H 2900 3500 50  0001 C CNN
+F 1 "+3.3V" H 2915 3823 50  0000 C CNN
+F 2 "" H 2900 3650 50  0001 C CNN
+F 3 "" H 2900 3650 50  0001 C CNN
+	1    2900 3650
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2900 3650 2900 4200
+Wire Wire Line
+	2900 4200 2700 4200
+Wire Wire Line
+	2900 4200 2900 5200
+Wire Wire Line
+	2900 5200 2700 5200
+Connection ~ 2900 4200
+$Comp
+L power:+3.3V #PWR0116
+U 1 1 631D5D69
+P 4900 4850
+F 0 "#PWR0116" H 4900 4700 50  0001 C CNN
+F 1 "+3.3V" H 4915 5023 50  0000 C CNN
+F 2 "" H 4900 4850 50  0001 C CNN
+F 3 "" H 4900 4850 50  0001 C CNN
+	1    4900 4850
+	0    1    1    0   
+$EndComp
+$Comp
+L power:GND #PWR0117
+U 1 1 631E2414
+P 4100 3500
+F 0 "#PWR0117" H 4100 3250 50  0001 C CNN
+F 1 "GND" H 4105 3327 50  0000 C CNN
+F 2 "" H 4100 3500 50  0001 C CNN
+F 3 "" H 4100 3500 50  0001 C CNN
+	1    4100 3500
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	3950 3600 3950 3550
+Wire Wire Line
+	3950 3550 4100 3550
+Wire Wire Line
+	4100 3550 4100 3500
+Wire Wire Line
+	4100 3600 4100 3550
+Connection ~ 4100 3550
+Wire Wire Line
+	4250 3600 4250 3550
+Wire Wire Line
+	4250 3550 4100 3550
+$Comp
+L power:+BATT #PWR0118
+U 1 1 631EDEE0
+P 3850 5700
+F 0 "#PWR0118" H 3850 5550 50  0001 C CNN
+F 1 "+BATT" H 3865 5873 50  0000 C CNN
+F 2 "" H 3850 5700 50  0001 C CNN
+F 3 "" H 3850 5700 50  0001 C CNN
+	1    3850 5700
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	3850 5700 3850 5600
+Wire Wire Line
+	3200 3000 5550 3000
+Wire Wire Line
+	3300 3100 5550 3100
+Wire Wire Line
+	3350 3200 5550 3200
+Wire Wire Line
+	4250 5600 4250 5650
+Wire Wire Line
+	4250 5650 4650 5650
+Wire Wire Line
+	4650 4700 4550 4700
+Wire Wire Line
+	4550 4800 4650 4800
+Connection ~ 4650 4800
+Wire Wire Line
+	4650 4800 4650 4700
+Wire Wire Line
+	4550 5000 4650 5000
+Wire Wire Line
+	4650 4800 4650 4850
+Connection ~ 4650 5000
+Wire Wire Line
+	4650 5000 4650 5650
+Wire Wire Line
+	4650 4850 4900 4850
+Connection ~ 4650 4850
+Wire Wire Line
+	4650 4850 4650 5000
+Wire Wire Line
+	3350 5000 3350 5300
+Wire Wire Line
+	3350 5300 2700 5300
+Wire Wire Line
+	3350 4800 2700 4800
+Wire Wire Line
+	3350 4500 2750 4500
+Wire Wire Line
+	2750 4500 2750 4300
+Wire Wire Line
+	2750 4300 2700 4300
+Wire Wire Line
+	3350 4300 2950 4300
+Wire Wire Line
+	2950 4300 2950 3800
+Wire Wire Line
+	2950 3800 2700 3800
+$Comp
+L Switch:SW_MEC_5E SW1-EMG1
+U 1 1 6334A143
+P 4950 1700
+F 0 "SW1-EMG1" H 4950 2085 50  0000 C CNN
+F 1 "SW_MEC_5E" H 4950 1994 50  0000 C CNN
+F 2 "Button_Switch_THT:SW_PUSH-12mm" H 4950 2000 50  0001 C CNN
+F 3 "http://www.apem.com/int/index.php?controller=attachment&id_attachment=1371" H 4950 2000 50  0001 C CNN
+	1    4950 1700
+	1    0    0    -1  
+$EndComp
+$Comp
+L Switch:SW_MEC_5E SW2-MODE1
+U 1 1 6334B151
+P 4950 2150
+F 0 "SW2-MODE1" H 4950 2535 50  0000 C CNN
+F 1 "SW_MEC_5E" H 4950 2444 50  0000 C CNN
+F 2 "Button_Switch_THT:SW_PUSH-12mm" H 4950 2450 50  0001 C CNN
+F 3 "http://www.apem.com/int/index.php?controller=attachment&id_attachment=1371" H 4950 2450 50  0001 C CNN
+	1    4950 2150
+	1    0    0    -1  
+$EndComp
+$Comp
+L Switch:SW_MEC_5E SW3-SELECT1
+U 1 1 6334BCDF
+P 4950 2600
+F 0 "SW3-SELECT1" H 4950 2985 50  0000 C CNN
+F 1 "SW_MEC_5E" H 4950 2894 50  0000 C CNN
+F 2 "Button_Switch_THT:SW_PUSH-12mm" H 4950 2900 50  0001 C CNN
+F 3 "http://www.apem.com/int/index.php?controller=attachment&id_attachment=1371" H 4950 2900 50  0001 C CNN
+	1    4950 2600
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5550 2500 5450 2500
+Wire Wire Line
+	5450 2500 5450 1700
+Wire Wire Line
+	5450 1600 5150 1600
+Wire Wire Line
+	5450 1700 5150 1700
+Connection ~ 5450 1700
+Wire Wire Line
+	5450 1700 5450 1600
+Wire Wire Line
+	5550 2600 5350 2600
+Wire Wire Line
+	5350 2600 5350 2150
+Wire Wire Line
+	5350 2050 5150 2050
+Wire Wire Line
+	5350 2150 5150 2150
+Connection ~ 5350 2150
+Wire Wire Line
+	5350 2150 5350 2050
+Wire Wire Line
+	5550 2700 5250 2700
+Wire Wire Line
+	5250 2700 5250 2600
+Wire Wire Line
+	5250 2500 5150 2500
+Wire Wire Line
+	5250 2600 5150 2600
+Connection ~ 5250 2600
+Wire Wire Line
+	5250 2600 5250 2500
+Wire Wire Line
+	4750 1600 4550 1600
+Wire Wire Line
+	4550 1600 4550 1700
+Wire Wire Line
+	4750 1700 4550 1700
+Connection ~ 4550 1700
+Wire Wire Line
+	4550 1700 4550 2050
+Wire Wire Line
+	4750 2050 4550 2050
+Connection ~ 4550 2050
+Wire Wire Line
+	4550 2050 4550 2150
+Wire Wire Line
+	4750 2150 4550 2150
+Connection ~ 4550 2150
+Wire Wire Line
+	4550 2150 4550 2500
+Wire Wire Line
+	4750 2500 4550 2500
+Connection ~ 4550 2500
+Wire Wire Line
+	4550 2500 4550 2600
+Wire Wire Line
+	4750 2600 4550 2600
+Connection ~ 4550 2600
+Wire Wire Line
+	4550 2600 4550 2650
+$Comp
+L Device:R_POT RV1
+U 1 1 6339A3BD
+P 6600 4800
+F 0 "RV1" V 6485 4800 50  0000 C CNN
+F 1 "R_POT" V 6394 4800 50  0000 C CNN
+F 2 "Potentiometer_THT:Potentiometer_Bourns_3386F_Vertical" H 6600 4800 50  0001 C CNN
+F 3 "~" H 6600 4800 50  0001 C CNN
+	1    6600 4800
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Device:R_POT RV2
+U 1 1 6339CB2C
+P 7150 4800
+F 0 "RV2" V 7035 4800 50  0000 C CNN
+F 1 "R_POT" V 6944 4800 50  0000 C CNN
+F 2 "Potentiometer_THT:Potentiometer_Bourns_3386F_Vertical" H 7150 4800 50  0001 C CNN
+F 3 "~" H 7150 4800 50  0001 C CNN
+	1    7150 4800
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:GND #PWR0119
+U 1 1 6339E19A
+P 6800 5050
+F 0 "#PWR0119" H 6800 4800 50  0001 C CNN
+F 1 "GND" H 6805 4877 50  0000 C CNN
+F 2 "" H 6800 5050 50  0001 C CNN
+F 3 "" H 6800 5050 50  0001 C CNN
+	1    6800 5050
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0120
+U 1 1 633A3C82
+P 7350 5050
+F 0 "#PWR0120" H 7350 4800 50  0001 C CNN
+F 1 "GND" H 7355 4877 50  0000 C CNN
+F 2 "" H 7350 5050 50  0001 C CNN
+F 3 "" H 7350 5050 50  0001 C CNN
+	1    7350 5050
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7350 4800 7300 4800
+Wire Wire Line
+	7350 4800 7350 5050
+Wire Wire Line
+	6800 4800 6750 4800
+Wire Wire Line
+	6800 4800 6800 5050
+$Comp
+L power:+3.3V #PWR0121
+U 1 1 633BAE77
+P 6950 4650
+F 0 "#PWR0121" H 6950 4500 50  0001 C CNN
+F 1 "+3.3V" H 6965 4823 50  0000 C CNN
+F 2 "" H 6950 4650 50  0001 C CNN
+F 3 "" H 6950 4650 50  0001 C CNN
+	1    6950 4650
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7000 4800 6950 4800
+Wire Wire Line
+	6950 4650 6950 4800
+$Comp
+L power:+3.3V #PWR0122
+U 1 1 633B50D9
+P 6400 4650
+F 0 "#PWR0122" H 6400 4500 50  0001 C CNN
+F 1 "+3.3V" H 6415 4823 50  0000 C CNN
+F 2 "" H 6400 4650 50  0001 C CNN
+F 3 "" H 6400 4650 50  0001 C CNN
+	1    6400 4650
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6450 4800 6400 4800
+Wire Wire Line
+	6400 4650 6400 4800
+Wire Wire Line
+	6600 4650 6600 3000
+Wire Wire Line
+	6600 3000 6550 3000
+Wire Wire Line
+	7150 4650 7150 4400
+Wire Wire Line
+	7150 4400 6650 4400
+Wire Wire Line
+	6650 4400 6650 3100
+Wire Wire Line
+	6650 3100 6550 3100
+Wire Wire Line
+	6550 3600 7600 3600
+Wire Wire Line
+	6550 3700 7500 3700
+$Comp
+L Custom_for_mech1:FXOS8700-DOF U6
+U 1 1 634067BF
+P 8350 4400
+F 0 "U6" H 9278 4051 50  0000 L CNN
+F 1 "FXOS8700-DOF" H 9278 3960 50  0000 L CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical" H 8750 3950 50  0001 C CNN
+F 3 "" H 8750 3950 50  0001 C CNN
+	1    8350 4400
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+3.3V #PWR0123
+U 1 1 63407D4D
+P 8000 4450
+F 0 "#PWR0123" H 8000 4300 50  0001 C CNN
+F 1 "+3.3V" H 8015 4623 50  0000 C CNN
+F 2 "" H 8000 4450 50  0001 C CNN
+F 3 "" H 8000 4450 50  0001 C CNN
+	1    8000 4450
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:GND #PWR0124
+U 1 1 63407D53
+P 7950 4750
+F 0 "#PWR0124" H 7950 4500 50  0001 C CNN
+F 1 "GND" H 7955 4577 50  0000 C CNN
+F 2 "" H 7950 4750 50  0001 C CNN
+F 3 "" H 7950 4750 50  0001 C CNN
+	1    7950 4750
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	7950 4750 8150 4750
+Wire Wire Line
+	8000 4450 8100 4450
+Wire Wire Line
+	8100 4450 8100 4550
+Wire Wire Line
+	8100 4550 8150 4550
+Wire Wire Line
+	8150 4850 7500 4850
+Wire Wire Line
+	7500 4850 7500 4000
+Connection ~ 7500 4000
+Wire Wire Line
+	8150 4950 7600 4950
+Wire Wire Line
+	7600 4950 7600 4100
+Connection ~ 7600 4100
+$Comp
+L Custom_for_mech1:TB6612FNG_Board U5
+U 1 1 63464C24
+P 3950 4600
+F 0 "U5" H 3950 5689 50  0000 C CNN
+F 1 "TB6612FNG_Board" H 3950 5780 50  0000 C CNN
+F 2 "Mech1_custom:SparkfunTB6612FNG" H 5250 3700 50  0001 C CNN
+F 3 "https://toshiba.semicon-storage.com/us/product/linear/motordriver/detail.TB6612FNG.html" H 4400 5200 50  0001 C CNN
+	1    3950 4600
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	4550 4400 5450 4400
+Wire Wire Line
+	5450 4400 5450 3600
+Wire Wire Line
+	5450 3600 5550 3600
+Wire Wire Line
+	4550 4500 5400 4500
+Wire Wire Line
+	5400 4500 5400 3500
+Wire Wire Line
+	5400 3500 5550 3500
+Wire Wire Line
+	4550 4300 5350 4300
+Wire Wire Line
+	5350 4300 5350 3400
+Wire Wire Line
+	5350 3400 5550 3400
+Wire Wire Line
+	4550 4200 5300 4200
+Wire Wire Line
+	5300 4200 5300 3300
+Wire Wire Line
+	5300 3300 5550 3300
+Wire Wire Line
+	2700 4100 3350 4100
+Wire Wire Line
+	3350 3200 3350 4100
+Wire Wire Line
+	2700 4000 3300 4000
+Wire Wire Line
+	3300 4000 3300 3100
+Wire Wire Line
+	3200 5100 2700 5100
+Wire Wire Line
+	3200 3000 3200 5100
+Wire Wire Line
+	2700 5000 3150 5000
+Wire Wire Line
+	3150 5000 3150 2900
+Wire Wire Line
+	3150 2900 5550 2900
+$EndSCHEMATC
