@@ -160,7 +160,6 @@ void loop() {
   Serial.print(target);
   Serial.print(" ");
   Serial.print(pos);
-  Serial.println();
   delay(1);
 }
 
