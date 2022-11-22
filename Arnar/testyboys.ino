@@ -24,6 +24,8 @@ int Flag = 0;
 float kp = 1;
 float kd = 0;
 float ki = 0;
+int distravel = 0;
+float distance = 0;
 
 void setup() {
   Serial.begin(115200);
@@ -38,11 +40,11 @@ void setup() {
   pinMode(IN2,OUTPUT);
   
   Serial.println("target pos");
+  
 }
 
 void loop() {
-  
-
+ 
   //Les serial
   while (Serial.available()) 
   {
@@ -127,16 +129,18 @@ void loop() {
 
   // signal the motor
   limitSwitches();
+  calibrate(dir,pwr,PWM,IN1,IN2);
+
   setMotor(dir,pwr,PWM,IN1,IN2);
 
 
   // store previous error
   eprev = e;
 
-  Serial.print(target);
-  Serial.print(" ");
-  Serial.print(pos);
-  Serial.println();
+  //Serial.print(target);
+  //Serial.print(" ");
+  //Serial.print(pos);
+  //Serial.println();
 }
 
 void setMotor(int dir, int pwmVal, int pwm, int in1, int in2){
@@ -144,14 +148,23 @@ void setMotor(int dir, int pwmVal, int pwm, int in1, int in2){
   if(dir == 1 && Flag != 1){
     digitalWrite(in1,HIGH);
     digitalWrite(in2,LOW);
+    Serial.print("1");
+    Serial.println();
+    Serial.print(Flag);
   }
   else if(dir == -1 && Flag != 2){
     digitalWrite(in1,LOW);
     digitalWrite(in2,HIGH);
+    Serial.print("2");
+    Serial.println();
+    Serial.print(Flag);
   }
   else{
     digitalWrite(in1,LOW);
     digitalWrite(in2,LOW);
+    Serial.print("3");
+    Serial.println();
+    Serial.print(Flag);
   }  
 }
 
@@ -175,4 +188,41 @@ void limitSwitches(){
     Flag = 0;
     } 
     
+  }
+  void calibrate(int dir, int pwmVal, int pwm, int in1, int in2){
+    delay(3000);
+    if (END_top != LOW) {
+        digitalWrite(in1,HIGH);
+        digitalWrite(in2,LOW);
+        while (END_bot == LOW) {
+        delay(0.01);
+    }
+        posi = 0;
+       
+    }
+    else { 
+        posi = 0;
+        
+    }
+    digitalWrite(in1,LOW);
+    digitalWrite(in2,LOW);
+    posi = 0;
+ 
+    delay(500);
+    digitalWrite(in1,LOW);
+    digitalWrite(in2,HIGH);
+    while (END_bot == LOW){
+        delay(0.01);
+    }
+    digitalWrite(in1,LOW);
+    digitalWrite(in2,LOW);
+    delay(1000);
+    distravel = abs(posi);
+    posi = 0;
+   
+    distance  = distravel/775;
+    
+
+    
+
   }
