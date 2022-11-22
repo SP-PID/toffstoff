@@ -24,22 +24,22 @@ float kd = 0;
 float ki = 0;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   pinMode(ENCA,INPUT);
   pinMode(ENCB,INPUT);
-  attachInterrupt(digitalPinToInterrupt(ENCA),readEncoder,RISING);
+
   
   pinMode(PWM,OUTPUT);
   pinMode(IN1,OUTPUT);
   pinMode(IN2,OUTPUT);
   
-  Serial.println("target pos");
-}
+  Serial.println("target pos");}
 
 void loop() {
   
 
-  //Les serial
+  // set target position
+  //int target = 1200;
   while (Serial.available()) 
   {
     char c = Serial.read(); //gets one byte from serial buffer
@@ -48,9 +48,11 @@ void loop() {
   }
   int end = readString.length();
 
-  if (readString.length() > 0) 
+  if (readString.length() >0) 
   {
-    //Skoða Hvort að það á að breyta p,i eða d
+    //Serial.println(readString); //so you can see the captured String
+    
+
     if (readString.substring(0,1) == "p")
     {
       kp = readString.substring(1,end).toFloat();
@@ -66,7 +68,6 @@ void loop() {
       kd = readString.substring(1,end).toFloat();
     }
 
-    //annars setja nýtt setpoint
     else{
       target = readString.toInt(); //convert readString into a number
       target = target * ratio;
@@ -74,7 +75,6 @@ void loop() {
     readString = "";
   }
   
-
   // time difference
   long currT = micros();
   float deltaT = ((float) (currT - prevT))/( 1.0e6 );
@@ -122,7 +122,7 @@ void loop() {
   }
 
   // signal the motor
-  setMotor(dir,pwr,PWM,IN1,IN2);
+setMotor(dir,pwr,PWM,IN1,IN2);
 
 
   // store previous error
