@@ -1,191 +1,134 @@
-#include <util/atomic.h> // For the ATOMIC_BLOCK macro
-#include <Wire.h>
+#include <util/atomic.h>
 
-
-#define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 64 // OLED display height, in pixels
-
-#define OLED_DC     8
-#define OLED_CS     10
-#define OLED_RESET  9
-
-
-
-#define ENCA 2 // YELLOW
-#define ENCB 4 // WHITE
+// Pins
+#define ENCA 2
+#define ENCB 4
 #define PWM 5
-#define IN2 5
 #define IN1 3
+#define IN2 5
 
-volatile int posi = 0; // specify posi as volatile: https://www.arduino.cc/reference/en/language/variables/variable-scope-qualifiers/volatile/
+// globals
 long prevT = 0;
-float eprev = 0;
-float eintegral = 0;
-int target;
-String readString = "";
-float pwr;
-int dir;
-long time = micros();
-int set = 1;
-float ratio = 1440 / 360 ;
+int posPrev = 0;
+// Use the "volatile" directive for variables
+// used in an interrupt
+volatile int pos_i = 0;
+volatile float velocity_i = 0;
+volatile long prevT_i = 0;
 
-float kp = 1;
-float kd = 0;
-float ki = 0;
+float v1Filt = 0;
+float v1Prev = 0;
+float v2Filt = 0;
+float v2Prev = 0;
+
+float eintegral = 0;
 
 void setup() {
   Serial.begin(115200);
+
   pinMode(ENCA,INPUT);
   pinMode(ENCB,INPUT);
-
-  
   pinMode(PWM,OUTPUT);
   pinMode(IN1,OUTPUT);
   pinMode(IN2,OUTPUT);
-  
-  Serial.println("target pos");}
+
+  attachInterrupt(digitalPinToInterrupt(ENCA),
+                  readEncoder,RISING);
+}
 
 void loop() {
-  
 
-  // set target position
-  //int target = 1200;
-  while (Serial.available()) 
-  {
-    char c = Serial.read(); //gets one byte from serial buffer
-    readString += c; //makes the String readString
-    delay(2); //slow looping to allow buffer to fill with next character
-  }
-  int end = readString.length();
-
-  if (readString.length() >0) 
-  {
-    //Serial.println(readString); //so you can see the captured String
-    
-
-    if (readString.substring(0,1) == "p")
-    {
-      kp = readString.substring(1,end).toFloat();
-    }
-
-    else if (readString.substring(0,1) == "i")
-    {
-      ki = readString.substring(1,end).toFloat();
-    }
-
-    else if (readString.substring(0,1) == "d")
-    {
-      kd = readString.substring(1,end).toFloat();
-    }
-
-    else{
-      target = readString.toInt(); //convert readString into a number
-      target = target * ratio;
-    }
-    readString = "";
+  // read the position in an atomic block
+  // to avoid potential misreads
+  int pos = 0;
+  float velocity2 = 0;
+  ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+    pos = pos_i;
+    velocity2 = velocity_i;
   }
 
-  // // PID constants
-  
-  // if (set == 1 && micros() - time > 3000000)
-  // {
-  //   Serial.println("up");
-  //   target = 1440;
-  //   set = 0;
-  //   time = micros();
-  // }
-
-  // if (set == 0 && micros() - time > 3000000)
-  // {
-  //   Serial.println("Down");
-  //   target = 0;
-  //   set = 1;
-  //   time = micros();
-  // }
-  
-
-  // time difference
+  // Compute velocity with method 1
   long currT = micros();
-  float deltaT = ((float) (currT - prevT))/( 1.0e6 );
+  float deltaT = ((float) (currT-prevT))/1.0e6;
+  float velocity1 = (pos - posPrev)/deltaT;
+  posPrev = pos;
   prevT = currT;
 
-  // Read the position in an atomic block to avoid a potential
-  // misread if the interrupt coincides with this code running
-  // see: https://www.arduino.cc/reference/en/language/variables/variable-scope-qualifiers/volatile/
-  int pos = 0; 
-  ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-    pos = posi;
-  }
-  
-  // error
-  int e = pos - target;
+  // Convert count/s to RPM
+  float v1 = velocity1/600.0*60.0;
+  float v2 = velocity2/600.0*60.0;
 
-  // derivative
-  float dedt = (e-eprev)/(deltaT);
+  // Low-pass filter (25 Hz cutoff)
+  v1Filt = 0.854*v1Filt + 0.0728*v1 + 0.0728*v1Prev;
+  v1Prev = v1;
+  v2Filt = 0.854*v2Filt + 0.0728*v2 + 0.0728*v2Prev;
+  v2Prev = v2;
 
-  // integral
+  // Set a target
+  float vt = 100*(sin(currT/1e6)>0);
+
+  // Compute the control signal u
+  float kp = 5;
+  float ki = 10;
+  float e = vt-v1Filt;
   eintegral = eintegral + e*deltaT;
-
-  // control signal
-  float u = kp*e + kd*dedt + ki*eintegral;
-
-  // motor power
   
-  if(e >= -1 && e <= 1)
-  {
-    pwr = 0;
-    dir = 0;
-  }
-  else{
-    
-    float pwr = fabs(u);
-    if( pwr > 255 ){
-        pwr = 255;
-        }
-    
-    
-    if(u<0){
+  float u = kp*e + ki*eintegral;
+
+  // Set the motor speed and direction
+  int dir = 1;
+  if (u<0){
     dir = -1;
-    }
-    else{dir = 1;}
   }
+  int pwr = (int) fabs(u);
+  if(pwr > 255){
+    pwr = 255;
+  }
+  setMotor(dir,pwr,PWM,IN1,IN2);
 
-  // signal the motor
- setMotor(dir,pwr,PWM,IN1,IN2);
-
-
-  // store previous error
-  eprev = e;
-
-  Serial.print(target);
+  Serial.print(vt);
   Serial.print(" ");
-  Serial.print(pos);
+  Serial.print(v1Filt);
   Serial.println();
   delay(1);
 }
 
 void setMotor(int dir, int pwmVal, int pwm, int in1, int in2){
-  analogWrite(pwm,pwmVal);
-  if(dir == 1){
+  analogWrite(pwm,pwmVal); // Motor speed
+  if(dir == 1){ 
+    // Turn one way
     digitalWrite(in1,HIGH);
     digitalWrite(in2,LOW);
   }
   else if(dir == -1){
+    // Turn the other way
     digitalWrite(in1,LOW);
     digitalWrite(in2,HIGH);
   }
   else{
+    // Or dont turn
     digitalWrite(in1,LOW);
-    digitalWrite(in2,LOW);
-  }  
+    digitalWrite(in2,LOW);    
+  }
 }
 
 void readEncoder(){
+  // Read encoder B when ENCA rises
   int b = digitalRead(ENCB);
-  if(b > 0){
-    posi++;
+  int increment = 0;
+  if(b>0){
+    // If B is high, increment forward
+    increment = 1;
   }
   else{
-    posi--;
+    // Otherwise, increment backward
+    increment = -1;
   }
+  pos_i = pos_i + increment;
+
+  // Compute velocity with method 2
+  long currT = micros();
+  float deltaT = ((float) (currT - prevT_i))/1.0e6;
+  velocity_i = increment/deltaT;
+  prevT_i = currT;
 }
