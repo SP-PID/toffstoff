@@ -2,6 +2,13 @@
 #include <Wire.h>
 
 
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+
+#define OLED_DC     8
+#define OLED_CS     10
+#define OLED_RESET  9
+
 
 
 #define ENCA 2 // YELLOW
@@ -21,7 +28,7 @@ int dir;
 long time = micros();
 int set = 1;
 float ratio = 1440 / 360 ;
-  int target = ;
+
 float kp = 1;
 float kd = 0;
 float ki = 0;
@@ -109,7 +116,7 @@ void loop() {
   ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
     pos = posi;
   }
-
+  
   // error
   int e = pos - target;
 
@@ -144,7 +151,7 @@ void loop() {
   }
 
   // signal the motor
- setMotor(dir,pwr,PWM,IN1,IN2);
+//  setMotor(dir,pwr,PWM,IN1,IN2);
 
 
   // store previous error
@@ -153,8 +160,7 @@ void loop() {
   Serial.print(target);
   Serial.print(" ");
   Serial.print(pos);
-  Serial.println("'arni er ur");
-  serial.print("jarni")
+  Serial.println();
   delay(1);
 }
 
