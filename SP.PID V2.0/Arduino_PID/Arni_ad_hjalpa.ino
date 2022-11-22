@@ -4,8 +4,10 @@
 #define ENCA 2 // YELLOW
 #define ENCB 4 // WHITE
 #define PWM 5
-#define IN2 5
-#define IN1 3
+#define IN1 5
+#define IN2 3
+#define END_top 8
+#define END_bot 9
 
 volatile int posi = 0; // specify posi as volatile: https://www.arduino.cc/reference/en/language/variables/variable-scope-qualifiers/volatile/
 long prevT = 0;
@@ -18,16 +20,18 @@ int dir;
 long time = micros();
 int set = 1;
 float ratio = 1440 / 360 ;
-
+int Flag = 0;
 float kp = 1;
 float kd = 0;
 float ki = 0;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   pinMode(ENCA,INPUT);
   pinMode(ENCB,INPUT);
   attachInterrupt(digitalPinToInterrupt(ENCA),readEncoder,RISING);
+  pinMode(END_top,INPUT);
+  pinMode(END_bot,INPUT);
   
   pinMode(PWM,OUTPUT);
   pinMode(IN1,OUTPUT);
@@ -122,6 +126,7 @@ void loop() {
   }
 
   // signal the motor
+  limitSwitches();
   setMotor(dir,pwr,PWM,IN1,IN2);
 
 
@@ -132,16 +137,15 @@ void loop() {
   Serial.print(" ");
   Serial.print(pos);
   Serial.println();
-  delay(1);
 }
 
 void setMotor(int dir, int pwmVal, int pwm, int in1, int in2){
   analogWrite(pwm,pwmVal);
-  if(dir == 1){
+  if(dir == 1 && Flag != 1){
     digitalWrite(in1,HIGH);
     digitalWrite(in2,LOW);
   }
-  else if(dir == -1){
+  else if(dir == -1 && Flag != 2){
     digitalWrite(in1,LOW);
     digitalWrite(in2,HIGH);
   }
@@ -160,3 +164,15 @@ void readEncoder(){
     posi--;
   }
 }
+void limitSwitches(){
+  if (END_top == LOW){
+    Flag = 1;
+    } 
+  else if (END_bot == LOW){
+    Flag = 2;
+    }
+  else{
+    Flag = 0;
+    } 
+    
+  }
