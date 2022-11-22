@@ -4,8 +4,10 @@
 #define ENCA 2 // YELLOW
 #define ENCB 4 // WHITE
 #define PWM 5
-#define IN2 5
-#define IN1 3
+#define IN1 5
+#define IN2 3
+#define END_top 8
+#define END_bot 9
 
 volatile int posi = 0; // specify posi as volatile: https://www.arduino.cc/reference/en/language/variables/variable-scope-qualifiers/volatile/
 long prevT = 0;
@@ -18,7 +20,7 @@ int dir;
 long time = micros();
 int set = 1;
 float ratio = 1440 / 360 ;
-
+int Flag = 0;
 float kp = 1;
 float kd = 0;
 float ki = 0;
@@ -27,19 +29,21 @@ void setup() {
   Serial.begin(115200);
   pinMode(ENCA,INPUT);
   pinMode(ENCB,INPUT);
-
+  attachInterrupt(digitalPinToInterrupt(ENCA),readEncoder,RISING);
+  pinMode(END_top,INPUT);
+  pinMode(END_bot,INPUT);
   
   pinMode(PWM,OUTPUT);
   pinMode(IN1,OUTPUT);
   pinMode(IN2,OUTPUT);
   
-  Serial.println("target pos");}
+  Serial.println("target pos");
+}
 
 void loop() {
   
 
-  // set target position
-  //int target = 1200;
+  //Les serial
   while (Serial.available()) 
   {
     char c = Serial.read(); //gets one byte from serial buffer
@@ -48,11 +52,9 @@ void loop() {
   }
   int end = readString.length();
 
-  if (readString.length() >0) 
+  if (readString.length() > 0) 
   {
-    //Serial.println(readString); //so you can see the captured String
-    
-
+    //Skoða Hvort að það á að breyta p,i eða d
     if (readString.substring(0,1) == "p")
     {
       kp = readString.substring(1,end).toFloat();
@@ -68,6 +70,7 @@ void loop() {
       kd = readString.substring(1,end).toFloat();
     }
 
+    //annars setja nýtt setpoint
     else{
       target = readString.toInt(); //convert readString into a number
       target = target * ratio;
@@ -75,6 +78,7 @@ void loop() {
     readString = "";
   }
   
+
   // time difference
   long currT = micros();
   float deltaT = ((float) (currT - prevT))/( 1.0e6 );
@@ -122,7 +126,8 @@ void loop() {
   }
 
   // signal the motor
-setMotor(dir,pwr,PWM,IN1,IN2);
+  limitSwitches();
+  setMotor(dir,pwr,PWM,IN1,IN2);
 
 
   // store previous error
@@ -132,16 +137,15 @@ setMotor(dir,pwr,PWM,IN1,IN2);
   Serial.print(" ");
   Serial.print(pos);
   Serial.println();
-  delay(1);
 }
 
 void setMotor(int dir, int pwmVal, int pwm, int in1, int in2){
   analogWrite(pwm,pwmVal);
-  if(dir == 1){
+  if(dir == 1 && Flag != 1){
     digitalWrite(in1,HIGH);
     digitalWrite(in2,LOW);
   }
-  else if(dir == -1){
+  else if(dir == -1 && Flag != 2){
     digitalWrite(in1,LOW);
     digitalWrite(in2,HIGH);
   }
@@ -160,3 +164,15 @@ void readEncoder(){
     posi--;
   }
 }
+void limitSwitches(){
+  if (END_top == LOW){
+    Flag = 1;
+    } 
+  else if (END_bot == LOW){
+    Flag = 2;
+    }
+  else{
+    Flag = 0;
+    } 
+    
+  }
