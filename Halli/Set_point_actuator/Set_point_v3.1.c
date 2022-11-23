@@ -101,15 +101,18 @@ step();
 }
 
 void reset_actuator() {
-buttonState = digitalRead(endPin);
-Serial.println(buttonState);
-
+    digitalWrite(dirPin,LOW);  
+    direction = 1;  
+    Serial.println(buttonState);    
+    while (buttonState)
+        buttonState = digitalRead(endPin);
+        step();
 }
 
 
-
-void loop() {
 reset_actuator();
+void loop() {
+
 int multiplier = update_microstepping(microstepping); 
 while (Serial.available()) 
   {
