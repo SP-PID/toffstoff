@@ -50,7 +50,6 @@ int update_microstepping(int microstepping) {
 
 // update position keeps track of current gantry position
 int update_position(int current_position,char direction[]) {
-  //Serial.println(current_position);
   if (direction == 1){
     return current_position - 1;
   }
@@ -101,23 +100,18 @@ step();
   Serial.println(current_position);
 }
 
+// Reset the actuator before operations start
 void reset_actuator() {
-    digitalWrite(dirPin,LOW);  
+    digitalWrite(dirPin,LOW);  // set direction of travel to down
     direction = 1;  
-    buttonState = digitalRead(endPin);
-   // Serial.println(buttonState);    
+    buttonState = digitalRead(endPin); 
     while (buttonState){
-        buttonState = digitalRead(endPin);
-       // Serial.println(buttonState); 
-        step();
+        buttonState = digitalRead(endPin); 
+        step(); // one step per repetition of loop untill actuator is at zero
     }
 }
 
-
-
-
 void loop() {
-
 int multiplier = update_microstepping(microstepping); 
 while (Serial.available()) 
   {
