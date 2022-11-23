@@ -11,7 +11,7 @@ int microstepping = 2;
 const int max_steps = 2657; 
 int requested_position = 1000;
 int multiplier = 2;
-
+String readString = "";
 
 void setup() {
 Serial.begin(9600);
@@ -106,7 +106,36 @@ while (Serial.available())
     delay(2); //slow looping to allow buffer to fill with next character
   }
 int end = readString.length();
+Serial.println(readString);
+delay(1000);
+go_to_position(readString.toInt());
+readString = "";
+//if (readString.length() >0) 
+//  {
+    //Serial.println(readString); //so you can see the captured String
+    
 
+//    if (readString.substring(0,1) == "p")
+//    {
+//      kp = readString.substring(1,end).toFloat();
+//    }
+
+   // else if (readString.substring(0,1) == "i")
+   // {
+   //   ki = readString.substring(1,end).toFloat();
+   // }
+
+    //else if (readString.substring(0,1) == "d")
+   // {
+   //   kd = readString.substring(1,end).toFloat();
+   // }
+
+    //else{
+    //  target = readString.toInt(); //convert readString into a number
+    //  target = target * ratio;
+   // }
+  //  readString = "";
+ // }
 //if(Serial.available()){
 //  input = Serial.read();
 //  Serial.print("You typed: " );
