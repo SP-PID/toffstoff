@@ -24,6 +24,7 @@ pinMode(dirPin,OUTPUT);
 pinMode(ms1,OUTPUT);
 pinMode(ms2,OUTPUT);
 pinMode(endPin,INPUT_PULLUP);
+reset_actuator();
 }
 
 
@@ -103,14 +104,18 @@ step();
 void reset_actuator() {
     digitalWrite(dirPin,LOW);  
     direction = 1;  
-    Serial.println(buttonState);    
-    while (buttonState)
+    buttonState = digitalRead(endPin);
+   // Serial.println(buttonState);    
+    while (buttonState){
         buttonState = digitalRead(endPin);
+       // Serial.println(buttonState); 
         step();
+    }
 }
 
 
-reset_actuator();
+
+
 void loop() {
 
 int multiplier = update_microstepping(microstepping); 
@@ -131,7 +136,6 @@ if (new_position != current_position) {
 }
 readString = "";
 }
-
 
 
 
