@@ -99,28 +99,36 @@ void loop() {
 //digitalWrite(ms2,LOW);  
 int multiplier = update_microstepping(microstepping); 
 //Serial.println(requested_position);
-if(Serial.available()){
-  input = Serial.read();
-  Serial.print("You typed: " );
-  Serial.println(input);
-  new_position = int(input)
+while (Serial.available()) 
+  {
+    char c = Serial.read(); //gets one byte from serial buffer
+    readString += c; //makes the String readString
+    delay(2); //slow looping to allow buffer to fill with next character
   }
-if (current_position != new_position){
-  go_to_position(new_position);
-  Serial.println(new_position);
-d elay(1000);
-  }
+int end = readString.length();
+
+//if(Serial.available()){
+//  input = Serial.read();
+//  Serial.print("You typed: " );
+//  Serial.println(input);
+//  new_position = int(input)
+//  }
+//if (current_position != new_position){
+//  go_to_position(new_position);
+ // Serial.println(new_position);
+//  delay(1000);
+//  }
 
 
-go_to_position(1500);
-Serial.println(1500);
-delay(1000);
-go_to_position(3500);
-Serial.println(3500);
-delay(1000);
-go_to_position(0);
-Serial.println(0);
-delay(1000);
+//go_to_position(1500);
+//Serial.println(1500);
+//delay(1000);
+//go_to_position(3500);
+//Serial.println(3500);
+//delay(1000);
+//go_to_position(0);
+//Serial.println(0);
+//delay(1000);
 
 }
 
