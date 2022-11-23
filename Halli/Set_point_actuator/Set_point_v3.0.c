@@ -13,7 +13,13 @@ pinMode(dirPin,OUTPUT);
 pinMode(ms1,OUTPUT);
 pinMode(ms2,OUTPUT);
 }
-
+int current_position = 500;
+int direction = 0;
+int microstepping = 2;
+const int max_steps = 2657; 
+//int STEPS = 0;
+int requested_position = 1000;
+int multiplier = 2;
 // controls the microstepping function of the TMC2208 driver
 int update_microstepping(int microstepping) {
   if (microstepping == 2)
@@ -54,7 +60,7 @@ void step() {
 }
 
 void go_to_position(int requested_position) {
-STEPS = abs((current_position - requested_position)); // Number of steps to move
+int STEPS = abs((current_position - requested_position)); // Number of steps to move
 Serial.println(STEPS);
 if (STEPS == 0){    
 // if the number of steps to go is zero then do nothing
@@ -86,13 +92,7 @@ step();
 }
 
 
-int current_position = 500;
-int direction = 0;
-int microstepping = 2;
-const int max_steps = 2657; 
-int STEPS = 0;
-int requested_position = 1000;
-int multiplier = 2;
+
 
 
 void loop() {
@@ -101,13 +101,18 @@ digitalWrite(ms2,LOW);
 int multiplier = update_microstepping(microstepping); 
 Serial.println(requested_position);
 go_to_position(500);
-delayMicroseconds(1000);
+Serial.println(500);
+delay(1000);
 go_to_position(1500);
-delayMicroseconds(1000);
+Serial.println(1500);
+delay(1000);
 go_to_position(3500);
-delayMicroseconds(1000);
+Serial.println(3500);
+delay(1000);
 go_to_position(0);
-delayMicroseconds(1000);
+Serial.println(0);
+delay(1000);
+
 }
 
 
