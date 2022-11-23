@@ -14,6 +14,7 @@ pinMode(ms1,OUTPUT);
 pinMode(ms2,OUTPUT);
 }
 
+// controls the microstepping function of the TMC2208 driver
 int update_microstepping(int microstepping) {
   if (microstepping == 2)
     {digitalWrite(ms1,HIGH);
@@ -52,6 +53,38 @@ void step() {
   delayMicroseconds(300);
 }
 
+void go_to_position(int requested_position) {
+STEPS = abs((current_position - requested_position)); // Number of steps to move
+Serial.println(STEPS);
+if (STEPS == 0){    
+// if the number of steps to go is zero then do nothing
+  return 0;
+}
+if (requested_position > max_steps) {
+// if requested position is beyond the actuators top end then go to top
+  requested_position = max_steps;
+}
+if (current_position > requested_position){
+// set direction of travel to down   
+digitalWrite(dirPin,LOW);  
+direction = 1;
+}
+if (current_position < requested_position){
+// set direction of travel to up
+digitalWrite(dirPin,HIGH);  
+direction = 0;
+}
+// move to requested position
+for(int x = 0; x < STEPS; x++) {
+// update current position for each step
+current_position = update_position(current_position,direction);  
+for(int y = 0; y < multiplier; y++) {
+// one step
+step();
+}
+}
+}
+
 
 int current_position = 500;
 int direction = 0;
@@ -65,46 +98,18 @@ int multiplier = 2;
 void loop() {
 digitalWrite(ms1,HIGH);
 digitalWrite(ms2,LOW);  
-//int multiplier = update_microstepping(microstepping);  
-//current_position = update_position(current_position,direction);
-// If the current position is below the requested position
-//Serial.println(current_position);
+int multiplier = update_microstepping(microstepping); 
 Serial.println(requested_position);
-//if (current_position != requested_position){
-STEPS = abs((current_position - requested_position));
-Serial.println(STEPS);
-if (STEPS == 0){
-  return 0;
+go_to_position(500);
+delayMicroseconds(1000);
+go_to_position(1500);
+delayMicroseconds(1000);
+go_to_position(3500);
+delayMicroseconds(1000);
+go_to_position(0);
+delayMicroseconds(1000);
 }
 
-if (current_position > requested_position){
-digitalWrite(dirPin,LOW);  // Direction pin low is down
-direction = 1;
-// set direction of travel to down
-}
-if (current_position < requested_position){
-digitalWrite(dirPin,HIGH);  
-direction = 0;
-// set direction of travel to down
-}
-for(int x = 0; x < (STEPS); x++) {
-current_position = update_position(current_position,direction);  
-for(int y = 0; y < multiplier; y++) {
-// one step
-  step();
-}
-// update the current position, should be one step closer to requested
-
-}
-//}
-//else{
-//  return 0;
-//  }
-
-
-Serial.println(current_position);
-delay(1000);
-}
 
 
 
