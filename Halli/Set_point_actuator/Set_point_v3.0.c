@@ -1,10 +1,17 @@
 // Define Constants
 
-// Connections to A4988
 const int dirPin = 2; // Direction
 const int stepPin = 3; // Step
 const int ms1 = 6;
 const int ms2 = 7;
+char input;
+int current_position = 500;
+int direction = 0;
+int microstepping = 2;
+const int max_steps = 2657; 
+int requested_position = 1000;
+int multiplier = 2;
+
 
 void setup() {
 Serial.begin(9600);
@@ -13,13 +20,8 @@ pinMode(dirPin,OUTPUT);
 pinMode(ms1,OUTPUT);
 pinMode(ms2,OUTPUT);
 }
-int current_position = 500;
-int direction = 0;
-int microstepping = 2;
-const int max_steps = 2657; 
-//int STEPS = 0;
-int requested_position = 1000;
-int multiplier = 2;
+
+
 // controls the microstepping function of the TMC2208 driver
 int update_microstepping(int microstepping) {
   if (microstepping == 2)
@@ -65,21 +67,21 @@ Serial.println(STEPS);
 if (STEPS == 0){    
 // if the number of steps to go is zero then do nothing
   return 0;
-}
+  }
 if (requested_position > max_steps) {
 // if requested position is beyond the actuators top end then go to top
   requested_position = max_steps;
-}
+  }
 if (current_position > requested_position){
 // set direction of travel to down   
 digitalWrite(dirPin,LOW);  
 direction = 1;
-}
+  }
 if (current_position < requested_position){
 // set direction of travel to up
 digitalWrite(dirPin,HIGH);  
 direction = 0;
-}
+  }
 // move to requested position
 for(int x = 0; x < STEPS; x++) {
 // update current position for each step
@@ -87,22 +89,29 @@ current_position = update_position(current_position,direction);
 for(int y = 0; y < multiplier; y++) {
 // one step
 step();
+    }
+  }
 }
-}
-}
-
-
-
-
+int new_position;
 
 void loop() {
-digitalWrite(ms1,HIGH);
-digitalWrite(ms2,LOW);  
+//digitalWrite(ms1,HIGH);
+//digitalWrite(ms2,LOW);  
 int multiplier = update_microstepping(microstepping); 
-Serial.println(requested_position);
-go_to_position(500);
-Serial.println(500);
-delay(1000);
+//Serial.println(requested_position);
+if(Serial.available()){
+  input = Serial.read();
+  Serial.print("You typed: " );
+  Serial.println(input);
+  new_position = int(input)
+  }
+if (current_position != new_position){
+  go_to_position(new_position);
+  Serial.println(new_position);
+d elay(1000);
+  }
+
+
 go_to_position(1500);
 Serial.println(1500);
 delay(1000);
@@ -114,8 +123,6 @@ Serial.println(0);
 delay(1000);
 
 }
-
-
 
 
 
