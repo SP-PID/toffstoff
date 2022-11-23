@@ -91,6 +91,7 @@ for(int y = 0; y < multiplier; y++) {
 step();
     }
   }
+  Serial.println(current_position);
 }
 int new_position;
 
@@ -108,8 +109,8 @@ while (Serial.available())
 int end = readString.length();
 if (end > 0) {
 Serial.println(readString);
+new_position = readString.toInt();
 if (new_position != current_position) {
-  new_position = readString.toInt()
   go_to_position(new_position);
   delay(1000);
 }
