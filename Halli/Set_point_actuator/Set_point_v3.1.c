@@ -4,14 +4,18 @@ const int dirPin = 2; // Direction
 const int stepPin = 3; // Step
 const int ms1 = 6;
 const int ms2 = 7;
+const int endPin = 4;
 char input;
-int current_position = 500;
+int current_position = 0;
 int direction = 0;
 int microstepping = 2;
 const int max_steps = 2657; 
 int requested_position = 1000;
 int multiplier = 2;
 String readString = "";
+int new_position;
+boolean buttonState;
+
 
 void setup() {
 Serial.begin(9600);
@@ -19,6 +23,7 @@ pinMode(stepPin,OUTPUT);
 pinMode(dirPin,OUTPUT);
 pinMode(ms1,OUTPUT);
 pinMode(ms2,OUTPUT);
+pinMode(endPin,INPUT_PULLUP);
 }
 
 
@@ -94,9 +99,17 @@ step();
   }
   Serial.println(current_position);
 }
-int new_position;
+
+void reset_actuator() {
+buttonState = digitalRead(endPin);
+Serial.println(buttonState);
+
+}
+
+
 
 void loop() {
+reset_actuator();
 int multiplier = update_microstepping(microstepping); 
 while (Serial.available()) 
   {
