@@ -208,7 +208,7 @@ void calibrate(int dir, int pwmVal, int in1, int in2){
     }
     else { 
         posi = 0;
-        Serial.print("Toppi nad");
+        Serial.println("Toppi nad");
         
     }
     digitalWrite(in1,LOW);
