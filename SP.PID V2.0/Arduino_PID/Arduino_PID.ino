@@ -1,21 +1,12 @@
 #include <util/atomic.h> // For the ATOMIC_BLOCK macro
 #include <Wire.h>
 
-
-#define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 64 // OLED display height, in pixels
-
-#define OLED_DC     8
-#define OLED_CS     10
-#define OLED_RESET  9
-
-
-
 #define ENCA 2 // YELLOW
 #define ENCB 4 // WHITE
-#define PWM 5
-#define IN2 5
-#define IN1 3
+#define IN1 5
+#define IN2 3
+#define END_top 8
+#define END_bot 9
 
 volatile int posi = 0; // specify posi as volatile: https://www.arduino.cc/reference/en/language/variables/variable-scope-qualifiers/volatile/
 long prevT = 0;
@@ -28,28 +19,34 @@ int dir;
 long time = micros();
 int set = 1;
 float ratio = 1440 / 360 ;
-
+int Flag = 0;
 float kp = 1;
 float kd = 0;
 float ki = 0;
+int distravel = 0;
+float distance = 0;
+int top = 0;
+int bot = 0;
 
 void setup() {
   Serial.begin(115200);
   pinMode(ENCA,INPUT);
   pinMode(ENCB,INPUT);
-
+  attachInterrupt(digitalPinToInterrupt(ENCA),readEncoder,RISING);
+  pinMode(END_top,INPUT_PULLUP);
+  pinMode(END_bot,INPUT_PULLUP);
   
-  pinMode(PWM,OUTPUT);
+  //pinMode(PWM,OUTPUT);
   pinMode(IN1,OUTPUT);
   pinMode(IN2,OUTPUT);
   
-  Serial.println("target pos");}
-
-void loop() {
+  Serial.println("target pos");
+  calibrate(dir, pwr, IN1, IN2);
+}
   
-
-  // set target position
-  //int target = 1200;
+void loop() {
+ 
+  //Les serial
   while (Serial.available()) 
   {
     char c = Serial.read(); //gets one byte from serial buffer
@@ -58,11 +55,9 @@ void loop() {
   }
   int end = readString.length();
 
-  if (readString.length() >0) 
+  if (readString.length() > 0) 
   {
-    //Serial.println(readString); //so you can see the captured String
-    
-
+    //Skoða Hvort að það á að breyta p,i eða d
     if (readString.substring(0,1) == "p")
     {
       kp = readString.substring(1,end).toFloat();
@@ -78,30 +73,13 @@ void loop() {
       kd = readString.substring(1,end).toFloat();
     }
 
+    //annars setja nýtt setpoint
     else{
       target = readString.toInt(); //convert readString into a number
       target = target * ratio;
     }
     readString = "";
   }
-
-  // // PID constants
-  
-  // if (set == 1 && micros() - time > 3000000)
-  // {
-  //   Serial.println("up");
-  //   target = 1440;
-  //   set = 0;
-  //   time = micros();
-  // }
-
-  // if (set == 0 && micros() - time > 3000000)
-  // {
-  //   Serial.println("Down");
-  //   target = 0;
-  //   set = 1;
-  //   time = micros();
-  // }
   
 
   // time difference
@@ -130,8 +108,9 @@ void loop() {
   float u = kp*e + kd*dedt + ki*eintegral;
 
   // motor power
-  
-  if(e >= -1 && e <= 1)
+  Serial.println(e);
+ 
+  if(e >= -15 && e <= 15)
   {
     pwr = 0;
     dir = 0;
@@ -151,31 +130,50 @@ void loop() {
   }
 
   // signal the motor
-//  setMotor(dir,pwr,PWM,IN1,IN2);
+  //limitSwitches();
+  //calibrate(dir,pwr,PWM,IN1,IN2);
 
+  setMotor(dir,pwr,IN1,IN2);
 
   // store previous error
   eprev = e;
 
-  Serial.print(target);
-  Serial.print(" ");
-  Serial.print(pos);
-  delay(1);
+  //Serial.print(target);
+  //Serial.print(" ");
+  //Serial.print(pos);
+  //Serial.println();
 }
 
-void setMotor(int dir, int pwmVal, int pwm, int in1, int in2){
-  analogWrite(pwm,pwmVal);
-  if(dir == 1){
-    digitalWrite(in1,HIGH);
-    digitalWrite(in2,LOW);
-  }
-  else if(dir == -1){
-    digitalWrite(in1,LOW);
+void setMotor(int dir, int pwmVal,int in1, int in2){
+  
+  if(dir == 1 && Flag != 1){
+    analogWrite(in1,pwmVal);
     digitalWrite(in2,HIGH);
+    top =digitalRead(END_top);
+    if (top == HIGH){
+      digitalWrite(in1,HIGH);
+      digitalWrite(in2,HIGH);
+      Flag = 1;
+    }
+    
+  }
+  else if(dir == -1 && Flag != 2){
+    digitalWrite(in1,HIGH);
+    analogWrite(in2,pwmVal);
+    bot = digitalRead(END_bot);
+    if (bot == HIGH){
+      digitalWrite(in1,HIGH);
+      digitalWrite(in2,HIGH);
+      Flag = 2;
+    }
+    
   }
   else{
-    digitalWrite(in1,LOW);
-    digitalWrite(in2,LOW);
+    digitalWrite(in1,HIGH);
+    digitalWrite(in2,HIGH);
+    Flag = 0;
+    
+  
   }  
 }
 
@@ -188,3 +186,45 @@ void readEncoder(){
     posi--;
   }
 }
+
+
+ 
+  void calibrate(int dir, int pwmVal, int in1, int in2){
+    delay(3000);
+    top =digitalRead(END_top);
+
+    if (END_top != HIGH) {
+        digitalWrite(in1,HIGH);
+        digitalWrite(in2,LOW);
+        Serial.print("Ekki a toppnum");
+        bot =digitalRead(END_bot);
+        while (END_bot == HIGH) {
+        delay(0.01);
+    }
+        posi = 0;
+       
+    }
+    else { 
+        posi = 0;
+        Serial.print("Toppi nad");
+        
+    }
+    digitalWrite(in1,LOW);
+    digitalWrite(in2,LOW);
+    posi = 0;
+ 
+    delay(500);
+    digitalWrite(in1,LOW);
+    digitalWrite(in2,HIGH);
+    top =digitalRead(END_top);
+    bot =digitalRead(END_bot);
+    while (END_bot == HIGH){
+        delay(0.01);
+    }
+    digitalWrite(in1,LOW);
+    digitalWrite(in2,LOW);
+    delay(1000);
+    distravel = abs(posi);
+    posi = 0;
+   
+    distance  = distravel/775;}
