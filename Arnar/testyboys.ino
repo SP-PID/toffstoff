@@ -108,7 +108,7 @@ void loop() {
   float u = kp*e + kd*dedt + ki*eintegral;
 
   // motor power
-  Serial.println(e);
+ 
  
   if(e >= -15 && e <= 15)
   {
@@ -189,14 +189,16 @@ void readEncoder(){
 
 
  
-  void calibrate(int dir, int pwmVal, int in1, int in2){
+void calibrate(int dir, int pwmVal, int in1, int in2){
     delay(3000);
+    bot =digitalRead(END_bot);
+    while (bot == LOW){
     top =digitalRead(END_top);
-
+    
     if (END_top != HIGH) {
         digitalWrite(in1,HIGH);
         digitalWrite(in2,LOW);
-        Serial.print("Ekki a toppnum")
+        Serial.println("Ekki a toppnum");
         bot =digitalRead(END_bot);
         while (END_bot == HIGH) {
         delay(0.01);
@@ -206,7 +208,7 @@ void readEncoder(){
     }
     else { 
         posi = 0;
-        Serial.print("Toppi nad")
+        Serial.print("Toppi nad");
         
     }
     digitalWrite(in1,LOW);
@@ -228,3 +230,4 @@ void readEncoder(){
     posi = 0;
    
     distance  = distravel/775;}
+}
