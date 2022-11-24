@@ -41,40 +41,8 @@ void setup() {
   pinMode(IN2,OUTPUT);
   
   Serial.println("target pos");
-  
-
-
-    delay(3000);
-    if (END_top != HIGH) {
-        digitalWrite(IN1,HIGH);
-        digitalWrite(IN2,LOW);
-        while (END_bot == HIGH) {
-        delay(0.01);
-    }
-        posi = 0;
-       
-    }
-    else { 
-        posi = 0;
-        
-    }
-    digitalWrite(IN1,LOW);
-    digitalWrite(IN2,LOW);
-    posi = 0;
- 
-    delay(500);
-    digitalWrite(IN1,LOW);
-    digitalWrite(IN2,HIGH);
-    while (END_bot == HIGH){
-        delay(0.01);
-    }
-    digitalWrite(IN1,LOW);
-    digitalWrite(IN2,LOW);
-    delay(1000);
-    distravel = abs(posi);
-    posi = 0;
-   
-    distance  = distravel/775;}
+  calibrate(dir, pwr, IN1, IN2);
+}
   
 void loop() {
  
@@ -221,36 +189,42 @@ void readEncoder(){
 
 
  
-  // void calibrate(int dir, int pwmVal, int pwm, int in1, int in2){
-  //   delay(3000);
-  //   if (END_top != LOW) {
-  //       digitalWrite(in1,HIGH);
-  //       digitalWrite(in2,LOW);
-  //       while (END_bot == LOW) {
-  //       delay(0.01);
-  //   }
-  //       posi = 0;
+  void calibrate(int dir, int pwmVal, int in1, int in2){
+    delay(3000);
+    top =digitalRead(END_top);
+
+    if (END_top != HIGH) {
+        digitalWrite(in1,HIGH);
+        digitalWrite(in2,LOW);
+        Serial.print("Ekki a toppnum")
+        bot =digitalRead(END_bot);
+        while (END_bot == HIGH) {
+        delay(0.01);
+    }
+        posi = 0;
        
-  //   }
-  //   else { 
-  //       posi = 0;
+    }
+    else { 
+        posi = 0;
+        Serial.print("Toppi nad")
         
-  //   }
-  //   digitalWrite(in1,LOW);
-  //   digitalWrite(in2,LOW);
-  //   posi = 0;
+    }
+    digitalWrite(in1,LOW);
+    digitalWrite(in2,LOW);
+    posi = 0;
  
-  //   delay(500);
-  //   digitalWrite(in1,LOW);
-  //   digitalWrite(in2,HIGH);
-  //   while (END_bot == LOW){
-  //       delay(0.01);
-  //   }
-  //   digitalWrite(in1,LOW);
-  //   digitalWrite(in2,LOW);
-  //   delay(1000);
-  //   distravel = abs(posi);
-  //   posi = 0;
+    delay(500);
+    digitalWrite(in1,LOW);
+    digitalWrite(in2,HIGH);
+    top =digitalRead(END_top);
+    bot =digitalRead(END_bot);
+    while (END_bot == HIGH){
+        delay(0.01);
+    }
+    digitalWrite(in1,LOW);
+    digitalWrite(in2,LOW);
+    delay(1000);
+    distravel = abs(posi);
+    posi = 0;
    
-  //   distance  = distravel/775;
-  // }
+    distance  = distravel/775;}
