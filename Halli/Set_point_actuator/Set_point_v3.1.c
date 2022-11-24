@@ -4,14 +4,18 @@ const int dirPin = 2; // Direction
 const int stepPin = 3; // Step
 const int ms1 = 6;
 const int ms2 = 7;
+const int endPin = 4;
 char input;
-int current_position = 500;
+int current_position = 0;
 int direction = 0;
 int microstepping = 2;
 const int max_steps = 2657; 
 int requested_position = 1000;
 int multiplier = 2;
 String readString = "";
+int new_position;
+boolean buttonState;
+
 
 void setup() {
 Serial.begin(9600);
@@ -19,6 +23,8 @@ pinMode(stepPin,OUTPUT);
 pinMode(dirPin,OUTPUT);
 pinMode(ms1,OUTPUT);
 pinMode(ms2,OUTPUT);
+pinMode(endPin,INPUT_PULLUP);
+reset_actuator();
 }
 
 
@@ -44,7 +50,6 @@ int update_microstepping(int microstepping) {
 
 // update position keeps track of current gantry position
 int update_position(int current_position,char direction[]) {
-  //Serial.println(current_position);
   if (direction == 1){
     return current_position - 1;
   }
@@ -62,15 +67,16 @@ void step() {
 }
 
 void go_to_position(int requested_position) {
+// if requested position is beyond the actuators top end then go to top    
+if (requested_position > max_steps) {
+Serial.println("Top Reached");
+requested_position = max_steps;
+  }
 int STEPS = abs((current_position - requested_position)); // Number of steps to move
 Serial.println(STEPS);
 if (STEPS == 0){    
 // if the number of steps to go is zero then do nothing
   return 0;
-  }
-if (requested_position > max_steps) {
-// if requested position is beyond the actuators top end then go to top
-  requested_position = max_steps;
   }
 if (current_position > requested_position){
 // set direction of travel to down   
@@ -93,13 +99,20 @@ step();
   }
   Serial.println(current_position);
 }
-int new_position;
+
+// Reset the actuator before operations start
+void reset_actuator() {
+    digitalWrite(dirPin,LOW);  // set direction of travel to down
+    direction = 1;  
+    buttonState = digitalRead(endPin); 
+    while (buttonState){
+        buttonState = digitalRead(endPin); 
+        step(); // one step per repetition of loop untill actuator is at zero
+    }
+}
 
 void loop() {
-//digitalWrite(ms1,HIGH);
-//digitalWrite(ms2,LOW);  
 int multiplier = update_microstepping(microstepping); 
-//Serial.println(requested_position);
 while (Serial.available()) 
   {
     char c = Serial.read(); //gets one byte from serial buffer
@@ -116,10 +129,7 @@ if (new_position != current_position) {
 }
 }
 readString = "";
-
-
 }
-
 
 
 
