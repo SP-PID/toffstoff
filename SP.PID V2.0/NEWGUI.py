@@ -10,6 +10,7 @@ import random
 import sys
 from time import sleep, perf_counter
 from threading import Thread
+from PIL import ImageTk, Image
 
 
 class Live():
@@ -136,10 +137,18 @@ INTERVALS = 0
 splash = Tk()
 splash.title("Test Loading screen")
 splash.geometry("1024x600")
+splash.attributes("-fullscreen", True)
 splash.wm_attributes("-topmost", True)
+rammi = Frame(splash, width=1024, height= 600)
+rammi.pack()
+rammi.place(anchor= 'center', relx= 0.5, rely= 0.5)
 splash_label = Label(splash, text= "LOADING", font= ("helvetica", 20))
-splash_label.pack(pady=20)
+splash_label.pack(anchor= 'w',pady=290, padx = 250)
 
+
+img= ImageTk.PhotoImage(Image.open("Loading.png"))
+rammi = Label(rammi, image= img)
+rammi.pack()
 
 win= Tk()
 
@@ -149,9 +158,9 @@ screen_height = win.winfo_screenheight()
 # --- fullscreen & configurations ---
 
 # run fullscreen
-#win.attributes("-fullscreen", True)
+win.attributes("-fullscreen", True)
 # keep on top
-#win.wm_attributes("-topmost", True)
+win.wm_attributes("-topmost", True)
 # close window with key `ESC`
 win.bind("<Escape>", on_escape)
 # hide cursor
@@ -271,7 +280,7 @@ takki2.grid(row =3, column =4)
 update()
 def winmain():
     splash.destroy()
-    win.mainloop()
+#    win.mainloop()
 
 splash.after(5000, winmain)
 
