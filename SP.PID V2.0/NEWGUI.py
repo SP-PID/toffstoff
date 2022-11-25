@@ -136,8 +136,9 @@ INTERVALS = 0
 splash = Tk()
 splash.title("Test Loading screen")
 splash.geometry("1024x600")
-
-
+splash.wm_attributes("-topmost", True)
+splash_label = Label(splash, text= "LOADING", font= ("helvetica", 20))
+splash_label.pack(pady=20)
 
 
 win= Tk()
@@ -148,9 +149,9 @@ screen_height = win.winfo_screenheight()
 # --- fullscreen & configurations ---
 
 # run fullscreen
-win.attributes("-fullscreen", True)
+#win.attributes("-fullscreen", True)
 # keep on top
-win.wm_attributes("-topmost", True)
+#win.wm_attributes("-topmost", True)
 # close window with key `ESC`
 win.bind("<Escape>", on_escape)
 # hide cursor
@@ -269,9 +270,9 @@ takki2.grid(row =3, column =4)
 # run first time
 update()
 def winmain():
-    splash.destroy
+    splash.destroy()
     win.mainloop()
 
-splash.after(30000, winmain)
+splash.after(5000, winmain)
 
 splash.mainloop()
