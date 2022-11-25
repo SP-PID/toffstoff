@@ -142,9 +142,9 @@ splash.wm_attributes("-topmost", True)
 rammi = Frame(splash, width=1024, height= 600)
 rammi.pack()
 rammi.place(anchor= 'center', relx= 0.5, rely= 0.5)
-splash_label = Label(splash, text= "LOADING", font= ("helvetica", 20))
-splash_label.pack(anchor= 'w',pady=290, padx = 250)
-
+#splash_label = Label(splash, text= "LOADING", font= ("helvetica", 20),bg= '#ab23ff')
+#splash_label.pack(anchor= 'w',pady=290, padx = 250)
+splash.wm_attributes('-transparentcolor','#ab23ff')
 
 img= ImageTk.PhotoImage(Image.open("Loading.png"))
 rammi = Label(rammi, image= img)
