@@ -177,7 +177,7 @@ rammi.place(anchor= 'center', relx= 0.5, rely= 0.5)
 #splash_label.pack(anchor= 'w',pady=290, padx = 250)
 splash.wm_attributes('-transparentcolor','#ab23ff')
 
-img= ImageTk.PhotoImage(Image.open("Loading.png"))
+img= ImageTk.PhotoImage(Image.open("SP.PID V2.0\Loading.png"))
 rammi = Label(rammi, image= img)
 rammi.pack()
 
