@@ -1,4 +1,4 @@
-20521955181300626
+20523624386750214
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -50260,12 +50260,19 @@ DRV8874 Single Brushed DC Motor Driver
 14
 14
 Custom
+Relay_SRA-05VDC-CL
+FINDER 36.11, SPDT relay, 10A, https://gfinder.findernet.com/public/attachments/36/EN/S36EN.pdf
+spdt relay
+0
+5
+5
+Custom
 TMC2208 - Driverboard
 
 
 0
-0
-0
+16
+16
 Diode_SMD
 D_0201_0603Metric
 Diode SMD 0201 (0603 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: https://www.vishay.com/docs/20052/crcw0201e3.pdf), generated with kicad-footprint-generator
