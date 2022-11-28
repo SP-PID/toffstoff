@@ -23,12 +23,11 @@ import shutil
 class WriteData():
     def __init__(self):
         pass
-
+    
     def writeData():
         with open('eitthvad.csv', 'w', newline= '') as file:
             writer = csv.writer(file)
             writer.writerow(["SP", "DC val", "time"])
-
 
 class Live():
     def __init__(self):
