@@ -11,6 +11,11 @@ import sys
 from time import sleep, perf_counter
 from threading import Thread
 from PIL import ImageTk, Image
+import csv
+
+class WriteData():
+    def __init__(self):
+        pass
 
 
 class Live():
@@ -28,11 +33,13 @@ class Live():
 
 live = Live()
 
+########################## GUI STARTS ##########################
 
 def on_escape(event=None):
     exit = True
     win.destroy()
     sys.exit()
+    #bæta hér við að slökkva á mótorum
     
 
 # update PID values from encoders
@@ -84,11 +91,11 @@ def small_plot1(i, ys):
     K_p = random.randint(0,50)     
 
     # Add y to list
-    ys.append(K_p)
+    ys.insert(0,K_p)
 
     # Limit y list to set number of items
-    ys = ys[-x_len:]
-
+    #ys = ys[-x_len:]
+    ys = ys[:x_len]
     # Update line with new Y values
     line2.set_ydata(ys)
 
@@ -129,7 +136,7 @@ def small_plot3(i, ys):
 
 # Constants to construct plots
 x_len = 500
-y_range = [0,1000]
+y_range = [0,800]
 x_range = [0,x_len]
 INTERVALS = 0
 
@@ -158,7 +165,7 @@ screen_height = win.winfo_screenheight()
 # --- fullscreen & configurations ---
 
 # run fullscreen
-win.attributes("-fullscreen", True)
+#win.attributes("-fullscreen", True)
 # keep on top
 win.wm_attributes("-topmost", True)
 # close window with key `ESC`
@@ -175,11 +182,13 @@ matplotlib.use("TkAgg")
 
 # Create a figure of specific size
 figure = plt.figure(figsize=(11, 6), dpi=93)
-gs = GridSpec(nrows=3, ncols=4)
+gs = GridSpec(nrows=36, ncols=40)
+plt.subplots_adjust(left= 0.05,right= 0.96,bottom= 0.05, top= 0.96)
 
 ################ BIG PLOT ################
 
-ax1 = figure.add_subplot(gs[:,0:3],)
+ax1 = figure.add_subplot(gs[:,0:29],)
+ax1.grid(linestyle= '--')
 xs = list(range(0,x_len))
 ys = [0]* x_len
 ax1.set_ylim(y_range)
@@ -203,7 +212,7 @@ anim = animation.FuncAnimation(figure, Big_Plot, fargs= (y1,y2), init_func=init,
 
 ################ SMALL PLOT 1 ################
 
-plot2 = figure.add_subplot(gs[0,3])
+plot2 = figure.add_subplot(gs[1:10,31:40])
 xs = list(range(0,x_len))
 ys = [0]* x_len
 plot2.set_ylim([-255,255])
@@ -219,7 +228,7 @@ ani2 = animation.FuncAnimation(figure,
 
 ################ SMALL PLOT 2 ################
 
-plot3 = figure.add_subplot(gs[1,3])
+plot3 = figure.add_subplot(gs[13:22,31:40])
 xs = list(range(0,x_len))
 ys = [0]* x_len
 plot3.set_ylim(y_range)
@@ -235,7 +244,7 @@ ani3 = animation.FuncAnimation(figure,
 
 ################ SMALL PLOT 3 ################
 
-plot4 = figure.add_subplot(gs[2,3])
+plot4 = figure.add_subplot(gs[25:34,31:40])
 xs = list(range(0,x_len))
 ys = [0]* x_len
 plot4.set_ylim(y_range)
@@ -252,8 +261,8 @@ ani4 = animation.FuncAnimation(figure,
 ###############################################################################
 
 # Add a canvas widget to associate the figure with canvas
-canvas = FigureCanvasTkAgg(figure, win)
-canvas.get_tk_widget().grid(row=0, column=0, rowspan=1, columnspan=5)
+canvas = FigureCanvasTkAgg(figure, master= win)
+canvas.get_tk_widget().grid(row=0, column=0, rowspan=1, columnspan=7,)
 
 frame = tk.Frame(master= win ,relief=tk.RAISED,borderwidth=0)
 frame.grid(row =3, column =1, padx=5,pady=5)
@@ -276,12 +285,18 @@ takki1.grid(row =3, column =0)
 takki2 = tk.Button(master= win,activebackground= None, text= "Exit", command= on_escape)
 takki2.grid(row =3, column =4)
 
+takki3 = tk.Button(master= win,activebackground= None, text= "Save", command= on_escape)
+takki3.grid(row =3, column =5)
+
+takki4 = tk.Button(master= win,activebackground= None, text= "Reset", command= on_escape)
+takki4.grid(row =3, column =6)
+
 # run first time
 update()
 def winmain():
     splash.destroy()
 #    win.mainloop()
 
-splash.after(5000, winmain)
+splash.after(400, winmain)
 
 splash.mainloop()
