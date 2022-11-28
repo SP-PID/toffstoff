@@ -26,8 +26,10 @@ class Live():
     def switch(self):
         if self.good:
             self.good = False
+            print(self.good)
         else:
             self.good = True
+            print(self.good)
 
 class global_val():
     def __init__(self):
@@ -301,7 +303,7 @@ frame3.grid(row =3, column =3, padx=10,pady=10)
 label3 = tk.Label(master=frame3)
 label3.pack(padx=3, pady=5)
 
-takki1 = tk.Button(master= win, command= None)
+takki1 = tk.Button(master= win, command= live.switch)
 takki1.grid(row =3, column =0)
 
 takki2 = tk.Button(master= win,activebackground= None, text= "Exit", command= on_escape)
