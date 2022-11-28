@@ -3,6 +3,7 @@
 
 #define ENCA 2 // YELLOW
 #define ENCB 4 // WHITE
+#define PWM 5
 #define IN1 5
 #define IN2 3
 #define END_top 8
@@ -23,29 +24,25 @@ int Flag = 0;
 float kp = 1;
 float kd = 0;
 float ki = 0;
-int distravel = 0;
-float distance = 0;
-int top = 0;
-int bot = 0;
 
 void setup() {
   Serial.begin(115200);
   pinMode(ENCA,INPUT);
   pinMode(ENCB,INPUT);
   attachInterrupt(digitalPinToInterrupt(ENCA),readEncoder,RISING);
-  pinMode(END_top,INPUT_PULLUP);
-  pinMode(END_bot,INPUT_PULLUP);
+  pinMode(END_top,INPUT);
+  pinMode(END_bot,INPUT);
   
-  //pinMode(PWM,OUTPUT);
+  pinMode(PWM,OUTPUT);
   pinMode(IN1,OUTPUT);
   pinMode(IN2,OUTPUT);
   
   Serial.println("target pos");
-  calibrate(dir, pwr, IN1, IN2);
 }
-  
+
 void loop() {
- 
+  
+
   //Les serial
   while (Serial.available()) 
   {
@@ -108,9 +105,8 @@ void loop() {
   float u = kp*e + kd*dedt + ki*eintegral;
 
   // motor power
-  Serial.println(e);
- 
-  if(e >= -15 && e <= 15)
+  
+  if(e >= -1 && e <= 1)
   {
     pwr = 0;
     dir = 0;
@@ -130,50 +126,32 @@ void loop() {
   }
 
   // signal the motor
-  //limitSwitches();
-  //calibrate(dir,pwr,PWM,IN1,IN2);
+  limitSwitches();
+  setMotor(dir,pwr,PWM,IN1,IN2);
 
-  setMotor(dir,pwr,IN1,IN2);
 
   // store previous error
   eprev = e;
 
-  //Serial.print(target);
-  //Serial.print(" ");
-  //Serial.print(pos);
-  //Serial.println();
+  Serial.print(target);
+  Serial.print(" ");
+  Serial.print(pos);
+  Serial.println();
 }
 
-void setMotor(int dir, int pwmVal,int in1, int in2){
-  
+void setMotor(int dir, int pwmVal, int pwm, int in1, int in2){
+  analogWrite(pwm,pwmVal);
   if(dir == 1 && Flag != 1){
-    analogWrite(in1,pwmVal);
-    digitalWrite(in2,HIGH);
-    top =digitalRead(END_top);
-    if (top == HIGH){
-      digitalWrite(in1,HIGH);
-      digitalWrite(in2,HIGH);
-      Flag = 1;
-    }
-    
+    digitalWrite(in1,HIGH);
+    digitalWrite(in2,LOW);
   }
   else if(dir == -1 && Flag != 2){
-    digitalWrite(in1,HIGH);
-    analogWrite(in2,pwmVal);
-    bot = digitalRead(END_bot);
-    if (bot == HIGH){
-      digitalWrite(in1,HIGH);
-      digitalWrite(in2,HIGH);
-      Flag = 2;
-    }
-    
+    digitalWrite(in1,LOW);
+    digitalWrite(in2,HIGH);
   }
   else{
-    digitalWrite(in1,HIGH);
-    digitalWrite(in2,HIGH);
-    Flag = 0;
-    
-  
+    digitalWrite(in1,LOW);
+    digitalWrite(in2,LOW);
   }  
 }
 
@@ -186,45 +164,15 @@ void readEncoder(){
     posi--;
   }
 }
-
-
- 
-  void calibrate(int dir, int pwmVal, int in1, int in2){
-    delay(3000);
-    top =digitalRead(END_top);
-
-    if (END_top != HIGH) {
-        digitalWrite(in1,HIGH);
-        digitalWrite(in2,LOW);
-        Serial.print("Ekki a toppnum");
-        bot =digitalRead(END_bot);
-        while (END_bot == HIGH) {
-        delay(0.01);
+void limitSwitches(){
+  if (END_top == LOW){
+    Flag = 1;
+    } 
+  else if (END_bot == LOW){
+    Flag = 2;
     }
-        posi = 0;
-       
-    }
-    else { 
-        posi = 0;
-        Serial.print("Toppi nad");
-        
-    }
-    digitalWrite(in1,LOW);
-    digitalWrite(in2,LOW);
-    posi = 0;
- 
-    delay(500);
-    digitalWrite(in1,LOW);
-    digitalWrite(in2,HIGH);
-    top =digitalRead(END_top);
-    bot =digitalRead(END_bot);
-    while (END_bot == HIGH){
-        delay(0.01);
-    }
-    digitalWrite(in1,LOW);
-    digitalWrite(in2,LOW);
-    delay(1000);
-    distravel = abs(posi);
-    posi = 0;
-   
-    distance  = distravel/775;}
+  else{
+    Flag = 0;
+    } 
+    
+  }
