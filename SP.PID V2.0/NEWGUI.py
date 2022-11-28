@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import random
 import sys
-from time import sleep, perf_counter
+from time import sleep, perf_counter, time
 from threading import Thread
 from PIL import ImageTk, Image
 import csv
@@ -114,12 +114,15 @@ def small_plot1(i, ys):
 
     # Add y to list
     ys.insert(0,K_p)
+    #xs.insert(0,time)
 
     # Limit y list to set number of items
     #ys = ys[-x_len:]
     ys = ys[:x_len]
+    #xs = xs[:x_len]
     # Update line with new Y values
     line2.set_ydata(ys)
+    #line2.set_xdata(xs)
 
     return line2,
 
