@@ -8,8 +8,13 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import random
 import sys
+import board
+from adafruit_seesaw import seesaw, rotaryio, digitalio
+import digitalio as dg
+import pwmio
 from time import sleep, perf_counter
 from threading import Thread
+import serial
 from PIL import ImageTk, Image
 import csv
 import shutil 
@@ -18,6 +23,12 @@ import shutil
 class WriteData():
     def __init__(self):
         pass
+
+    def writeData():
+        with open('eitthvad.csv', 'w', newline= '') as file:
+            writer = csv.writer(file)
+            writer.writerow(["SP", "DC val", "time"])
+
 
 class Live():
     def __init__(self):
@@ -28,6 +39,62 @@ class Live():
             self.good = False
         else:
             self.good = True
+
+class Encoders():
+    def __init__(self,address,zerostate=0):
+            self.SKREF = 2500000
+            self.qt_enc = seesaw.Seesaw(board.I2C(), addr=address)
+            self.qt_enc.pin_mode(24, self.qt_enc.INPUT_PULLUP)
+            self.button = digitalio.DigitalIO(self.qt_enc, 24)
+            self.button_held = False
+            self.encoder = rotaryio.IncrementalEncoder(self.qt_enc)
+            self.last_position = 0
+            self.pos = zerostate
+            self.zerostate = zerostate
+            self.encoder.position = self.zerostate
+            print(self.encoder.position)
+
+
+    def Get_enc_val(self):
+        self.pos = -self.encoder.position
+        
+        if self.pos < 0 :
+            self.encoder.position = 0
+            self.pos = 0
+        
+        if not self.button.value and not self.button_held:
+            self.encoder.position = -self.zerostate
+            self.pos = self.zerostate
+            self.last_position = self.zerostate
+        
+        if self.pos != self.last_position:
+            if abs(abs(self.pos)-abs(self.last_position)) < 100:
+                self.position = self.pos
+                self.last_position = self.position
+                return self.position/10
+            else:
+                return self.last_position/10
+        else:
+            return self.last_position/10
+
+    def get_setpoint(self):
+        self.pos = -self.encoder.position
+        if self.pos > self.SKREF and self.pos < (self.SKREF + 10):
+            self.encoder.position = -(self.SKREF)
+            self.pos = self.SKREF
+            self.last_position = self.SKREF
+        if self.pos < 0:
+            self.encoder.position = 0
+            self.pos =0
+        if self.pos != self.last_position:
+            if abs(abs(self.pos)-abs(self.last_position)) < 100:
+                self.position = self.pos
+                self.last_position = self.position
+                return self.position
+            else:
+                return self.last_position
+        else:
+            return self.last_position
 
 class global_val():
     def __init__(self):
@@ -41,6 +108,8 @@ class global_val():
             self.sptemp = 0
             self.PWM_val = 0
             self.DC_ratio = 1
+            self.DC_pos = 0
+            self.timefromard = 0
 
 
 live = Live()
@@ -175,7 +244,7 @@ rammi.place(anchor= 'center', relx= 0.5, rely= 0.5)
 #splash_label.pack(anchor= 'w',pady=290, padx = 250)
 splash.wm_attributes('-transparentcolor','#ab23ff')
 
-img= ImageTk.PhotoImage(Image.open("SP.PID V2.0\Loading.png"))
+img= ImageTk.PhotoImage(Image.open("Loading.png"))
 rammi = Label(rammi, image= img)
 rammi.pack()
 
