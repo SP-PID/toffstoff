@@ -23,7 +23,7 @@ import shutil
 class WriteData():
     def __init__(self):
         pass
-    
+
     def writeData():
         with open('eitthvad.csv', 'w', newline= '') as file:
             writer = csv.writer(file)
@@ -122,8 +122,8 @@ def on_escape(event=None):
     #bæta hér við að slökkva á mótorum
 
 def store():
-    original = r'C:\Users\Ron\Deskto p\Test_1\products.csv'
-    target = r'C:\Users\Ron\Desktop\Test_2\products.csv'
+    original = r'/homepipipi/Documents/PID_REGL/test.csv'
+    target = r''
     
     shutil.copyfile(original, target)
 
@@ -378,7 +378,7 @@ takki2.grid(row =3, column =4)
 takki3 = tk.Button(master= win,activebackground= None, text= "Save", command= store)
 takki3.grid(row =3, column =5)
 
-takki4 = tk.Button(master= win,activebackground= None, text= "Reset", command= on_escape)
+takki4 = tk.Button(master= win,activebackground= None, text= "Reset", command= reset)
 takki4.grid(row =3, column =6)
 
 # run first time
