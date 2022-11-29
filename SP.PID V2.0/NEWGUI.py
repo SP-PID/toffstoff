@@ -8,12 +8,15 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import random
 import sys
-from time import sleep, perf_counter, time
+import time
 from threading import Thread
 from PIL import ImageTk, Image
 import csv
 import shutil 
+from datetime import datetime
 
+global xstemp
+xstemp = 0
 
 class WriteData():
     def __init__(self):
@@ -44,9 +47,65 @@ class global_val():
             self.PWM_val = 0
             self.DC_ratio = 1
 
+            self.SetPoint = []
+            self.DC_Motor = []
+            self.Timi = []
+
+
+
+########################## Write Data ##########################
+
+class SaveData():
+    def __init__(self):
+        self._running = True
+
+    def terminate(self):
+        self._running = False
+
+    def StoreData(self):
+        filename = 'SP-' +str(datetime.now().strftime("%Y-%m-%d-%H-%M"))+'.csv'
+        with open(filename, mode= 'w', newline= '') as csvfile:
+            fieldnames = ['SP', 'DC', 'Time']
+            writer = csv.DictWriter(csvfile, fieldnames= fieldnames)
+            writer.writeheader()
+            writer.writerow({'SP':gv.SetPoint, 'DC':gv.DC_Motor, 'Time':gv.Timi})
+        gv.SetPoint = []
+        gv.DC_Motor = []
+        gv.Timi = []
+        
+ 
 
 live = Live()
 gv = global_val()
+savedata = SaveData()
+
+class WriteDataThread():
+    def __init__(self):
+        self._running = True
+
+    def terminate(self):
+        self._running = False
+
+    def run(self):
+        while True:
+            while live.good is True:
+                self.sp = random.randint(0,100)
+                self.dc = random.randint(100,200)
+                self.timi = random.randint(200,300)
+                gv.SetPoint.append(self.sp)
+                gv.DC_Motor.append(self.dc)
+                gv.Timi.append(self.timi)
+                time.sleep(0.001)
+            time.sleep(0.001)
+
+
+
+
+writedata_thread =  WriteDataThread()
+writedata_thread = Thread(target= writedata_thread.run)
+writedata_thread.start()
+
+
 ########################## Button functions ##########################
 
 def on_escape(event=None):
@@ -109,40 +168,48 @@ def Big_Plot(i, y1, y2):
     return lines
 
 # function for live animation on small graph no 1
-def small_plot1(i, ys):
+def small_plot1(i, ys, xs):
 
     # Read temperature (Celsius) from TMP102
     K_p = random.randint(0,50)     
 
     # Add y to list
-    ys.insert(0,K_p)
+    ys.append(K_p)
+    global xstemp
+    if xstemp < x_len - 1:
+        xstemp += 1
+    else:    
+        xs = xs[-x_len:]
     #xs.insert(0,time)
-
+    xs.append(xstemp)
     # Limit y list to set number of items
     #ys = ys[-x_len:]
-    ys = ys[:x_len]
-    #xs = xs[:x_len]
+    ys = ys[-x_len:]
+
     # Update line with new Y values
-    line2.set_ydata(ys)
+    line2.set_data(xs,ys)
     #line2.set_xdata(xs)
 
     return line2,
 
 # function for live animation on small graph no 2
-def small_plot2(i, ys):
+def small_plot2(i, ys, xs):
 
     # Read temperature (Celsius) from TMP102
     K_i = random.randint(0,50)    
+    global xstemp
 
-
-    # Add y to list
     ys.append(K_i)
+    if xstemp >= x_len:
+        xs = xs[-x_len:]
+    # Add y to list
+    xs.append(xstemp)
 
     # Limit y list to set number of items
     ys = ys[-x_len:]
 
     # Update line with new Y values
-    line3.set_ydata(ys)
+    line3.set_data(xs, ys)
 
     return line3,
 
@@ -169,7 +236,7 @@ INTERVALS = 0
 
 # Create an instance of tkinter frame
 splash = Tk()
-splash.title("Test Loading screen")
+splash.title("Loading screen")
 splash.geometry("1024x600")
 splash.attributes("-fullscreen", True)
 splash.wm_attributes("-topmost", True)
@@ -180,7 +247,7 @@ rammi.place(anchor= 'center', relx= 0.5, rely= 0.5)
 #splash_label.pack(anchor= 'w',pady=290, padx = 250)
 splash.wm_attributes('-transparentcolor','#ab23ff')
 
-img= ImageTk.PhotoImage(Image.open("SP.PID V2.0\Loading.png"))
+img= ImageTk.PhotoImage(Image.open("Loading.png"))
 rammi = Label(rammi, image= img)
 rammi.pack()
 
@@ -240,24 +307,24 @@ anim = animation.FuncAnimation(figure, Big_Plot, fargs= (y1,y2), init_func=init,
 ################ SMALL PLOT 1 ################
 
 plot2 = figure.add_subplot(gs[1:10,31:40])
-xs = list(range(0,x_len))
-ys = [0]* x_len
-plot2.set_ylim([-255,255])
-plot2.set_xlim([0,x_len])
+#xs = list(range(0,x_len))
+xs = []
+ys = []
+plot2.set_ylim(y_range)
+plot2.set_xlim(x_range)
 plot2.set_title('PWM', rotation='vertical',x=1.1,y=0.3)
 line2, = plot2.plot(xs,ys, color= "red")
-
 ani2 = animation.FuncAnimation(figure,
     small_plot1,
-    fargs=(ys,),
+    fargs=(ys,xs,),
     interval=INTERVALS,
     blit=True)
 
 ################ SMALL PLOT 2 ################
 
 plot3 = figure.add_subplot(gs[13:22,31:40])
-xs = list(range(0,x_len))
-ys = [0]* x_len
+xs = []
+ys = []
 plot3.set_ylim(y_range)
 plot3.set_xlim(x_range)
 plot3.set_title('PWM', rotation='vertical',x=1.1,y=0.3)
@@ -265,7 +332,7 @@ line3, = plot3.plot(xs,ys, color= "red")
 
 ani3 = animation.FuncAnimation(figure,
     small_plot2,
-    fargs=(ys,),
+    fargs=(ys,xs,),
     interval=INTERVALS,
     blit=True)
 
@@ -312,7 +379,7 @@ takki1.grid(row =3, column =0)
 takki2 = tk.Button(master= win,activebackground= None, text= "Exit", command= on_escape)
 takki2.grid(row =3, column =4)
 
-takki3 = tk.Button(master= win,activebackground= None, text= "Save", command= store)
+takki3 = tk.Button(master= win,activebackground= None, text= "Save", command= savedata.StoreData)
 takki3.grid(row =3, column =5)
 
 takki4 = tk.Button(master= win,activebackground= None, text= "Reset", command= on_escape)
