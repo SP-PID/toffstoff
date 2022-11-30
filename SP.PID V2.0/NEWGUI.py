@@ -14,6 +14,8 @@ from PIL import ImageTk, Image
 import csv
 import shutil 
 from datetime import datetime
+from itertools import zip_longest
+import os
 
 global xstemp
 xstemp = 0
@@ -46,7 +48,6 @@ class global_val():
             self.sptemp = 0
             self.PWM_val = 0
             self.DC_ratio = 1
-
             self.SetPoint = []
             self.DC_Motor = []
             self.Timi = []
@@ -63,16 +64,26 @@ class SaveData():
         self._running = False
 
     def StoreData(self):
-        filename = 'SP-' +str(datetime.now().strftime("%Y-%m-%d-%H-%M"))+'.csv'
-        with open(filename, mode= 'w', newline= '') as csvfile:
-            fieldnames = ['SP', 'DC', 'Time']
-            writer = csv.DictWriter(csvfile, fieldnames= fieldnames)
-            writer.writeheader()
-            writer.writerow({'SP':gv.SetPoint, 'DC':gv.DC_Motor, 'Time':gv.Timi})
+        filename = 'SP-' +str(datetime.now().strftime("%Y-%m-%d %H.%M"))+'.csv'
+        listi1 = [gv.SetPoint, gv.DC_Motor, gv.Timi]
+        export_data = zip_longest(*listi1, fillvalue='')
+        with open("temp.csv", mode= 'w',encoding="ISO-8859-1", newline= '') as csvfile:
+            #fieldnames = ['SP', 'DC', 'Time']
+            writer = csv.writer(csvfile)
+            writer.writerow(("SP","DC","TIME"))
+            writer.writerows(export_data)
+        csvfile.close()
         gv.SetPoint = []
         gv.DC_Motor = []
         gv.Timi = []
-        
+        ## geyma undir öðru nafni rename-a og síðan move. 
+        old_path = r'C:\Users\olisb\Documents\Programing\SP.PID\toffstoff\SP.PID V2.0\temp.csv'
+        new_path = r'C:\Users\olisb\Documents\Programing\SP.PID\toffstoff\SP.PID V2.0\New path\temp.csv'
+        shutil.move(old_path, new_path)
+        timestamp = datetime.now().strftime("%Y-%m-%d %H.%M")
+        old_name = r"C:\Users\olisb\Documents\Programing\SP.PID\toffstoff\SP.PID V2.0\New path\temp.csv"
+        new_name = r"C:\Users\olisb\Documents\Programing\SP.PID\toffstoff\SP.PID V2.0\New path\SP.PID " + timestamp + ".csv"
+        os.rename(old_name,new_name)
  
 
 live = Live()
@@ -116,7 +127,7 @@ def on_escape(event=None):
 
 def store():
     original = r'C:\Users\Ron\Deskto p\Test_1\products.csv'
-    target = r'C:\Users\Ron\Desktop\Test_2\products.csv'
+    target = r'C:\Users\Roon\Desktop\Test_2\products.csv'
     
     shutil.copyfile(original, target)
 
@@ -130,7 +141,8 @@ def update():
     label1['text'] = "K_p = " + str(1)
     label2['text'] = "K_i = " + str(2)
     label3['text'] = "K_d = " + str(3)
-    takki1['text'] = "SP = " + str(4)
+    label4['text'] = "SP = " + str(4)
+    takki1['text'] = "Record"
     if live.good is True:
         takki1['bg'] = "green"
         takki1['activebackground'] = "green"
@@ -373,17 +385,23 @@ frame3.grid(row =3, column =3, padx=10,pady=10)
 label3 = tk.Label(master=frame3)
 label3.pack(padx=3, pady=5)
 
+frame4 = tk.Frame(master= win ,relief=tk.RAISED,borderwidth=0)
+frame4.grid(row =3, column =0, padx=10,pady=10)
+label4 = tk.Label(master=frame4)
+label4.pack(padx=3, pady=5)
+
+
 takki1 = tk.Button(master= win, command= live.switch)
-takki1.grid(row =3, column =0)
+takki1.grid(row =3, column =4)
 
 takki2 = tk.Button(master= win,activebackground= None, text= "Exit", command= on_escape)
-takki2.grid(row =3, column =4)
+takki2.grid(row =3, column =5)
 
 takki3 = tk.Button(master= win,activebackground= None, text= "Save", command= savedata.StoreData)
-takki3.grid(row =3, column =5)
+takki3.grid(row =3, column =6)
 
 takki4 = tk.Button(master= win,activebackground= None, text= "Reset", command= on_escape)
-takki4.grid(row =3, column =6)
+takki4.grid(row =3, column =7)
 
 # run first time
 update()
