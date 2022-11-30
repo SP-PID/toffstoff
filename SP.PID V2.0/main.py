@@ -8,21 +8,26 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import random
 import sys
-import time
+import board
+from adafruit_seesaw import seesaw, rotaryio, digitalio
+import digitalio as dg
+import pwmio
+from time import sleep, perf_counter
 from threading import Thread
+import serial
 from PIL import ImageTk, Image
 import csv
 import shutil 
-from datetime import datetime
-from itertools import zip_longest
-import os
 
-global xstemp
-xstemp = 0
 
 class WriteData():
     def __init__(self):
         pass
+
+    def writeData():
+        with open('eitthvad.csv', 'w', newline= '') as file:
+            writer = csv.writer(file)
+            writer.writerow(["SP", "DC val", "time"])
 
 class Live():
     def __init__(self):
@@ -31,10 +36,64 @@ class Live():
     def switch(self):
         if self.good:
             self.good = False
-            print(self.good)
         else:
             self.good = True
-            print(self.good)
+
+class Encoders():
+    def __init__(self,address,zerostate=0):
+            self.SKREF = 2500000
+            self.qt_enc = seesaw.Seesaw(board.I2C(), addr=address)
+            self.qt_enc.pin_mode(24, self.qt_enc.INPUT_PULLUP)
+            self.button = digitalio.DigitalIO(self.qt_enc, 24)
+            self.button_held = False
+            self.encoder = rotaryio.IncrementalEncoder(self.qt_enc)
+            self.last_position = 0
+            self.pos = zerostate
+            self.zerostate = zerostate
+            self.encoder.position = self.zerostate
+            print(self.encoder.position)
+
+
+    def Get_enc_val(self):
+        self.pos = -self.encoder.position
+        
+        if self.pos < 0 :
+            self.encoder.position = 0
+            self.pos = 0
+        
+        if not self.button.value and not self.button_held:
+            self.encoder.position = -self.zerostate
+            self.pos = self.zerostate
+            self.last_position = self.zerostate
+        
+        if self.pos != self.last_position:
+            if abs(abs(self.pos)-abs(self.last_position)) < 100:
+                self.position = self.pos
+                self.last_position = self.position
+                return self.position/10
+            else:
+                return self.last_position/10
+        else:
+            return self.last_position/10
+
+    def get_setpoint(self):
+        self.pos = -self.encoder.position
+        if self.pos > self.SKREF and self.pos < (self.SKREF + 10):
+            self.encoder.position = -(self.SKREF)
+            self.pos = self.SKREF
+            self.last_position = self.SKREF
+        if self.pos < 0:
+            self.encoder.position = 0
+            self.pos =0
+        if self.pos != self.last_position:
+            if abs(abs(self.pos)-abs(self.last_position)) < 100:
+                self.position = self.pos
+                self.last_position = self.position
+                return self.position
+            else:
+                return self.last_position
+        else:
+            return self.last_position
 
 class global_val():
     def __init__(self):
@@ -48,75 +107,12 @@ class global_val():
             self.sptemp = 0
             self.PWM_val = 0
             self.DC_ratio = 1
-            self.SetPoint = []
-            self.DC_Motor = []
-            self.Timi = []
+            self.DC_pos = 0
+            self.timefromard = 0
 
-
-
-########################## Write Data ##########################
-
-class SaveData():
-    def __init__(self):
-        self._running = True
-
-    def terminate(self):
-        self._running = False
-
-    def StoreData(self):
-        filename = 'SP-' +str(datetime.now().strftime("%Y-%m-%d %H.%M"))+'.csv'
-        listi1 = [gv.SetPoint, gv.DC_Motor, gv.Timi]
-        export_data = zip_longest(*listi1, fillvalue='')
-        with open("temp.csv", mode= 'w',encoding="ISO-8859-1", newline= '') as csvfile:
-            #fieldnames = ['SP', 'DC', 'Time']
-            writer = csv.writer(csvfile)
-            writer.writerow(("SP","DC","TIME"))
-            writer.writerows(export_data)
-        csvfile.close()
-        gv.SetPoint = []
-        gv.DC_Motor = []
-        gv.Timi = []
-        ## geyma undir öðru nafni rename-a og síðan move. 
-        old_path = r'C:\Users\olisb\Documents\Programing\SP.PID\toffstoff\SP.PID V2.0\temp.csv'
-        new_path = r'C:\Users\olisb\Documents\Programing\SP.PID\toffstoff\SP.PID V2.0\New path\temp.csv'
-        shutil.move(old_path, new_path)
-        timestamp = datetime.now().strftime("%Y-%m-%d %H.%M")
-        old_name = r"C:\Users\olisb\Documents\Programing\SP.PID\toffstoff\SP.PID V2.0\New path\temp.csv"
-        new_name = r"C:\Users\olisb\Documents\Programing\SP.PID\toffstoff\SP.PID V2.0\New path\SP.PID " + timestamp + ".csv"
-        os.rename(old_name,new_name)
- 
 
 live = Live()
 gv = global_val()
-savedata = SaveData()
-
-class WriteDataThread():
-    def __init__(self):
-        self._running = True
-
-    def terminate(self):
-        self._running = False
-
-    def run(self):
-        while True:
-            while live.good is True:
-                self.sp = random.randint(0,100)
-                self.dc = random.randint(100,200)
-                self.timi = random.randint(200,300)
-                gv.SetPoint.append(self.sp)
-                gv.DC_Motor.append(self.dc)
-                gv.Timi.append(self.timi)
-                time.sleep(0.001)
-            time.sleep(0.001)
-
-
-
-
-writedata_thread =  WriteDataThread()
-writedata_thread = Thread(target= writedata_thread.run)
-writedata_thread.start()
-
-
 ########################## Button functions ##########################
 
 def on_escape(event=None):
@@ -126,8 +122,8 @@ def on_escape(event=None):
     #bæta hér við að slökkva á mótorum
 
 def store():
-    original = r'C:\Users\Ron\Deskto p\Test_1\products.csv'
-    target = r'C:\Users\Roon\Desktop\Test_2\products.csv'
+    original = r'/homepipipi/Documents/PID_REGL/test.csv'
+    target = r''
     
     shutil.copyfile(original, target)
 
@@ -141,8 +137,7 @@ def update():
     label1['text'] = "K_p = " + str(1)
     label2['text'] = "K_i = " + str(2)
     label3['text'] = "K_d = " + str(3)
-    label4['text'] = "SP = " + str(4)
-    takki1['text'] = "Record"
+    takki1['text'] = "SP = " + str(4)
     if live.good is True:
         takki1['bg'] = "green"
         takki1['activebackground'] = "green"
@@ -180,48 +175,37 @@ def Big_Plot(i, y1, y2):
     return lines
 
 # function for live animation on small graph no 1
-def small_plot1(i, ys, xs):
+def small_plot1(i, ys):
 
     # Read temperature (Celsius) from TMP102
     K_p = random.randint(0,50)     
 
     # Add y to list
-    ys.append(K_p)
-    global xstemp
-    if xstemp < x_len - 1:
-        xstemp += 1
-    else:    
-        xs = xs[-x_len:]
-    #xs.insert(0,time)
-    xs.append(xstemp)
+    ys.insert(0,K_p)
+
     # Limit y list to set number of items
     #ys = ys[-x_len:]
-    ys = ys[-x_len:]
-
+    ys = ys[:x_len]
     # Update line with new Y values
-    line2.set_data(xs,ys)
-    #line2.set_xdata(xs)
+    line2.set_ydata(ys)
 
     return line2,
 
 # function for live animation on small graph no 2
-def small_plot2(i, ys, xs):
+def small_plot2(i, ys):
 
     # Read temperature (Celsius) from TMP102
     K_i = random.randint(0,50)    
-    global xstemp
 
-    ys.append(K_i)
-    if xstemp >= x_len:
-        xs = xs[-x_len:]
+
     # Add y to list
-    xs.append(xstemp)
+    ys.append(K_i)
 
     # Limit y list to set number of items
     ys = ys[-x_len:]
 
     # Update line with new Y values
-    line3.set_data(xs, ys)
+    line3.set_ydata(ys)
 
     return line3,
 
@@ -248,7 +232,7 @@ INTERVALS = 0
 
 # Create an instance of tkinter frame
 splash = Tk()
-splash.title("Loading screen")
+splash.title("Test Loading screen")
 splash.geometry("1024x600")
 splash.attributes("-fullscreen", True)
 splash.wm_attributes("-topmost", True)
@@ -319,24 +303,24 @@ anim = animation.FuncAnimation(figure, Big_Plot, fargs= (y1,y2), init_func=init,
 ################ SMALL PLOT 1 ################
 
 plot2 = figure.add_subplot(gs[1:10,31:40])
-#xs = list(range(0,x_len))
-xs = []
-ys = []
-plot2.set_ylim(y_range)
-plot2.set_xlim(x_range)
+xs = list(range(0,x_len))
+ys = [0]* x_len
+plot2.set_ylim([-255,255])
+plot2.set_xlim([0,x_len])
 plot2.set_title('PWM', rotation='vertical',x=1.1,y=0.3)
 line2, = plot2.plot(xs,ys, color= "red")
+
 ani2 = animation.FuncAnimation(figure,
     small_plot1,
-    fargs=(ys,xs,),
+    fargs=(ys,),
     interval=INTERVALS,
     blit=True)
 
 ################ SMALL PLOT 2 ################
 
 plot3 = figure.add_subplot(gs[13:22,31:40])
-xs = []
-ys = []
+xs = list(range(0,x_len))
+ys = [0]* x_len
 plot3.set_ylim(y_range)
 plot3.set_xlim(x_range)
 plot3.set_title('PWM', rotation='vertical',x=1.1,y=0.3)
@@ -344,7 +328,7 @@ line3, = plot3.plot(xs,ys, color= "red")
 
 ani3 = animation.FuncAnimation(figure,
     small_plot2,
-    fargs=(ys,xs,),
+    fargs=(ys,),
     interval=INTERVALS,
     blit=True)
 
@@ -385,23 +369,17 @@ frame3.grid(row =3, column =3, padx=10,pady=10)
 label3 = tk.Label(master=frame3)
 label3.pack(padx=3, pady=5)
 
-frame4 = tk.Frame(master= win ,relief=tk.RAISED,borderwidth=0)
-frame4.grid(row =3, column =0, padx=10,pady=10)
-label4 = tk.Label(master=frame4)
-label4.pack(padx=3, pady=5)
-
-
-takki1 = tk.Button(master= win, command= live.switch)
-takki1.grid(row =3, column =4)
+takki1 = tk.Button(master= win, command= None)
+takki1.grid(row =3, column =0)
 
 takki2 = tk.Button(master= win,activebackground= None, text= "Exit", command= on_escape)
-takki2.grid(row =3, column =5)
+takki2.grid(row =3, column =4)
 
-takki3 = tk.Button(master= win,activebackground= None, text= "Save", command= savedata.StoreData)
-takki3.grid(row =3, column =6)
+takki3 = tk.Button(master= win,activebackground= None, text= "Save", command= store)
+takki3.grid(row =3, column =5)
 
-takki4 = tk.Button(master= win,activebackground= None, text= "Reset", command= on_escape)
-takki4.grid(row =3, column =7)
+takki4 = tk.Button(master= win,activebackground= None, text= "Reset", command= reset)
+takki4.grid(row =3, column =6)
 
 # run first time
 update()
