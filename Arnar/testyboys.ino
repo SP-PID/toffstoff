@@ -24,12 +24,12 @@ float kp = 1;
 float kd = 0;
 float ki = 0;
 int distravel = 0;
-float distance = 0;
+float steps = 0;
 int top = 0;
 int bot = 0;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   pinMode(ENCA,INPUT);
   pinMode(ENCB,INPUT);
   attachInterrupt(digitalPinToInterrupt(ENCA),readEncoder,RISING);
@@ -45,8 +45,115 @@ void setup() {
 }
   
 void loop() {
- 
+ while (Serial.available()) 
+  {
+    char c = Serial.read(); //gets one byte from serial buffer
+    readString += c; //makes the String readString
+    delay(2); //slow looping to allow buffer to fill with next character
+  }
+  int end = readString.length();
+  
+  if (readString.length() > 0) 
+  {
+    if (readString == "calibrate")
+    {calibrate(dir, pwr, IN1, IN2);} 
+    if (readString == "run"){
+      run();
+    }
+    //Skoða Hvort að það á að breyta p,i eða d
+    if (readString.substring(0,1) == "p")
+    {
+      kp = readString.substring(1,end).toFloat();
+    }
+
+    else if (readString.substring(0,1) == "i")
+    {
+      ki = readString.substring(1,end).toFloat();
+    }
+
+    else if (readString.substring(0,1) == "d")
+    {
+      kd = readString.substring(1,end).toFloat();
+    }
+
+    //annars setja nýtt setpoint
+    else{
+      target = readString.toInt(); //convert readString into a number
+      target = target * ratio;
+    }
+    readString = "";
+  }
+
+}
   //Les serial
+ 
+  
+
+  // time difference
+  // long currT = micros();
+  // float deltaT = ((float) (currT - prevT))/( 1.0e6 );
+  // prevT = currT;
+
+  // Read the position in an atomic block to avoid a potential
+  // misread if the interrupt coincides with this code running
+  // see: https://www.arduino.cc/reference/en/language/variables/variable-scope-qualifiers/volatile/
+  // int pos = 0; 
+  // ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+  //   pos = posi;
+  // }
+  
+  // error
+  // int e = pos - target;
+
+  // derivative
+  // float dedt = (e-eprev)/(deltaT);
+
+  // integral
+  // eintegral = eintegral + (e*deltaT);
+
+  // control signal
+  // float u = (kp*e) + (kd*dedt) + (ki*eintegral);
+
+  // motor power
+ 
+ 
+  // if(e >= -2 && e <= 2)
+  // {
+  //   pwr = 0;
+  //   dir = 0;
+  // }
+  // else{
+    
+  //   float pwr = fabs(u);
+  //   if( pwr > 255 ){
+  //       pwr = 255;
+  //       }
+    
+    
+  //   if(u<0){
+  //   dir = -1;
+  //   }
+  //   else{dir = 1;}
+  // }
+
+  // signal the motor
+  // limitSwitches();
+  // calibrate(dir,pwr,PWM,IN1,IN2);
+
+  // setMotor(dir,pwr,IN1,IN2);
+
+  // store previous error
+  // eprev = e;
+
+  // Serial.print(target);
+  // Serial.print(" ");
+  // Serial.print(pos);
+  // Serial.println();
+  
+//}
+void run(){
+
+  while (true) {
   while (Serial.available()) 
   {
     char c = Serial.read(); //gets one byte from serial buffer
@@ -54,9 +161,11 @@ void loop() {
     delay(2); //slow looping to allow buffer to fill with next character
   }
   int end = readString.length();
-
   if (readString.length() > 0) 
   {
+    if (readString == "Stop"){
+      break;
+    }
     //Skoða Hvort að það á að breyta p,i eða d
     if (readString.substring(0,1) == "p")
     {
@@ -138,13 +247,11 @@ void loop() {
   // store previous error
   eprev = e;
 
-  Serial.print(target);
-  Serial.print(" ");
+  //Serial.print(target);
+  //Serial.print(" ");
   Serial.print(pos);
-  Serial.println();
-  
-}
-
+  //Serial.println();
+}}
 void setMotor(int dir, int pwmVal,int in1, int in2){
    
   if(dir == 1 && Flag != 2){
@@ -156,7 +263,7 @@ void setMotor(int dir, int pwmVal,int in1, int in2){
       digitalWrite(in1,HIGH);
       digitalWrite(in2,HIGH);
       Flag = 2;
-      Serial.println("Top");
+      //Serial.println("Top");
     }
     
   }
@@ -169,7 +276,7 @@ void setMotor(int dir, int pwmVal,int in1, int in2){
       digitalWrite(in2,HIGH);
       
       Flag = 1;
-      Serial.println("BOTTOM");
+      //Serial.println("BOTTOM");
     }
     
   }
@@ -229,7 +336,7 @@ void calibrate(int dir, int pwmVal, int in1, int in2){
     distravel = abs(posi);
     posi = 0;
    
-    distance  = distravel/775;
+    steps = distravel/775;
     Serial.println(distravel);
-    Serial.println(distance);
+    Serial.println(steps);
     }
