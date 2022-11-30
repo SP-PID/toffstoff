@@ -63,6 +63,7 @@ class DC_control():
     def read(self):
         x = self.ser.readline()
         x = x.decode(encoding='UTF-8',errors='strict')
+
 class Stepper_control():
     def __init__(self) :
         self.ser = serial.Serial(
@@ -78,6 +79,8 @@ class Stepper_control():
     def read(self):
         x = self.ser.readline()
         x = x.decode(encoding='UTF-8',errors='strict')
+    def calibrate(self):
+        self.ser.write(str.encode('calibrate'))
 
 
 
@@ -138,69 +141,69 @@ class Encoders():
         else:
             return self.last_position
 
-class DC_encoder_thread():
+# class DC_encoder_thread():
 
-    def __init__(self):
-        self._running = True
+#     def __init__(self):
+#         self._running = True
 
-    def terminate(self):
-        self._running = False
+#     def terminate(self):
+#         self._running = False
 
-    def run(self):
+#     def run(self):
         
-        ser.write(b'0')
+#         ser.write(b'0')
         
-        while True:
-            x = ser.readline();
-            x = x.decode(encoding='UTF-8',errors='strict')
-            try:
-                gv.dc_enc_val = int(x)
-            except ValueError:
-                pass
+#         while True:
+#             x = ser.readline();
+#             x = x.decode(encoding='UTF-8',errors='strict')
+#             try:
+#                 gv.dc_enc_val = int(x)
+#             except ValueError:
+#                 pass
             
-            #if e_stop_bot.value == True:
-            #    print("zeroed")
-            #    ser.write(0)
-            time.sleep(0.00000000001)
+#             if e_stop_bot.value == True:
+#                print("zeroed")
+#                ser.write(0)
+#             time.sleep(0.00000000001)
 
 
 
 
 
 
-class write_sp_thread():
-    def __init___(self):
-        self._running = True
+# class write_sp_thread():
+#     def __init___(self):
+#         self._running = True
     
-    def terminate(self):
-        self._running = False
+#     def terminate(self):
+#         self._running = False
     
-    def run(self):
-        sp = "sp" + str(gv.sp)
-        ser2.write(str.encode(sp))
+#     def run(self):
+#         sp = "sp" + str(gv.sp)
+#         ser2.write(str.encode(sp))
 
 
 
-class write_PID_thread():
-    def __init___(self):
-        self._running = True
+# class write_PID_thread():
+#     def __init___(self):
+#         self._running = True
     
-    def terminate(self):
-        self._running = False
+#     def terminate(self):
+#         self._running = False
     
-    def run(self):
-        kp = "p" +str(gv.kp)
-        ki= "i" + str(gv.ki)
-        kd = "d" + str(gv.kd)
-        sp = str(gv.sp)
-        ser.write(str.encode(sp))
-        time.sleep(0.00001)
-        ser.write(str.encode(kp))
-        time.sleep(0.00001)
-        ser.write(str.encode(ki))
-        time.sleep(0.00001)
-        ser.write(str.encode(kd))
-        time.sleep(0.00001)
+#     def run(self):
+#         kp = "p" +str(gv.kp)
+#         ki= "i" + str(gv.ki)
+#         kd = "d" + str(gv.kd)
+#         sp = str(gv.sp)
+#         ser.write(str.encode(sp))
+#         time.sleep(0.00001)
+#         ser.write(str.encode(kp))
+#         time.sleep(0.00001)
+#         ser.write(str.encode(ki))
+#         time.sleep(0.00001)
+#         ser.write(str.encode(kd))
+#         time.sleep(0.00001)
 class global_val():
     def __init__(self):
             self.POS = 0
@@ -259,15 +262,3 @@ encoders = Encoders()
 get_values = get_values_thread()
 get_values = Thread(target= get_values.run)
 get_values.start()
-
-step = write_sp_thread()
-step = Thread(target= step.run)
-step.start()
-
-dc = write_PID_thread()
-dc = Thread(target= dc.run)
-dc.start()
-
-DC_encoder_read = DC_encoder_thread()
-DC_encoder_read = Thread(target= DC_encoder_read.run)
-DC_encoder_read.start()
