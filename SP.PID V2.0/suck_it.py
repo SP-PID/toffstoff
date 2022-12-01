@@ -760,6 +760,5 @@ takki2.grid(row =3, column =4)
 
 # run first time
 update()
-
 #
 win.mainloop()
