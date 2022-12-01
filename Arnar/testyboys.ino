@@ -1,10 +1,10 @@
 #include <util/atomic.h> // For the ATOMIC_BLOCK macro
 #include <Wire.h>
 
-#define ENCA 2 // YELLOW
-#define ENCB 4 // WHITE
-#define IN1 3
-#define IN2 5
+#define ENCA 3 // YELLOW
+#define ENCB 2 // WHITE
+#define IN1 5
+#define IN2 6
 #define END_top 8
 #define END_bot 9
 
@@ -12,13 +12,12 @@ volatile int posi = 0; // specify posi as volatile: https://www.arduino.cc/refer
 long prevT = 0;
 float eprev = 0;
 float eintegral = 0;
-int target;
+int target = 0;
 String readString = "";
 float pwr;
 int dir;
 long time = micros();
 int set = 1;
-float ratio = 1440 / 360 ;
 int Flag = 0;
 float kp = 1;
 float kd = 0;
@@ -55,8 +54,14 @@ void loop() {
   
   if (readString.length() > 0) 
   {
+    Serial.println(readString);
     if (readString == "calibrate")
-    {calibrate(dir, pwr, IN1, IN2);} 
+    {
+      Serial.println("Start Calibrate");
+      calibrate(dir, pwr, IN1, IN2);
+      Serial.println("Calibrate done"); 
+    } 
+    
     if (readString == "run"){
       run();
     }
@@ -79,7 +84,6 @@ void loop() {
     //annars setja nýtt setpoint
     else{
       target = readString.toInt(); //convert readString into a number
-      target = target * ratio;
     }
     readString = "";
   }
@@ -152,18 +156,22 @@ void loop() {
   
 //}
 void run(){
-
+  readString = "";
   while (true) {
   while (Serial.available()) 
   {
     char c = Serial.read(); //gets one byte from serial buffer
     readString += c; //makes the String readString
     delay(2); //slow looping to allow buffer to fill with next character
+    Serial.println("Núna hér");
   }
   int end = readString.length();
+  Serial.println(target);
   if (readString.length() > 0) 
   {
-    if (readString == "Stop"){
+    if (readString == "stop"){
+      digitalWrite(IN1,HIGH);
+      digitalWrite(IN2,HIGH);
       break;
     }
     //Skoða Hvort að það á að breyta p,i eða d
@@ -185,7 +193,6 @@ void run(){
     //annars setja nýtt setpoint
     else{
       target = readString.toInt(); //convert readString into a number
-      target = target * ratio;
     }
     readString = "";
   }
@@ -249,21 +256,21 @@ void run(){
 
   //Serial.print(target);
   //Serial.print(" ");
-  Serial.print(pos);
+  //Serial.println(pos);
   //Serial.println();
 }}
 void setMotor(int dir, int pwmVal,int in1, int in2){
-   
+  Serial.println(Flag);
   if(dir == 1 && Flag != 2){
     Flag = 0;
     analogWrite(in1,pwmVal);
     digitalWrite(in2,HIGH);
    
-    if (digitalRead(END_top) == HIGH){
+    if (digitalRead(END_bot) == HIGH){
       digitalWrite(in1,HIGH);
       digitalWrite(in2,HIGH);
       Flag = 2;
-      //Serial.println("Top");
+      Serial.println("Top");
     }
     
   }
@@ -271,12 +278,12 @@ void setMotor(int dir, int pwmVal,int in1, int in2){
     digitalWrite(in1,HIGH);
     analogWrite(in2,pwmVal);
     Flag = 0;
-    if (digitalRead(END_bot) == HIGH){
+    if (digitalRead(END_top) == HIGH){
       digitalWrite(in1,HIGH);
       digitalWrite(in2,HIGH);
       
       Flag = 1;
-      //Serial.println("BOTTOM");
+      Serial.println("BOTTOM");
     }
     
   }
@@ -301,13 +308,14 @@ void readEncoder(){
 
  
 void calibrate(int dir, int pwmVal, int in1, int in2){
-    delay(3000);
+    Serial.println("prufa");
+    delay(1000);
     bot =digitalRead(END_bot);
     //top =digitalRead(END_top);
     
     while (digitalRead(END_top) != HIGH) {
         digitalWrite(in1,HIGH);
-        digitalWrite(in2,LOW);
+        analogWrite(in2,170);
         bot =digitalRead(END_bot);
         
         //while (END_bot == HIGH) {
@@ -322,13 +330,13 @@ void calibrate(int dir, int pwmVal, int in1, int in2){
     digitalWrite(in2,HIGH);
     posi = 0;
  
-    delay(2000);
+    delay(1000);
     while (digitalRead(END_bot) != HIGH){
-    digitalWrite(in1,LOW);
+    analogWrite(in1,170);
     digitalWrite(in2,HIGH);
-    while (digitalRead(END_bot) == HIGH){
-        delay(0.01);
-    }
+    //while (digitalRead(END_bot) == HIGH){
+    //    delay(0.01);
+    //}
     }
     digitalWrite(in1,HIGH);
     digitalWrite(in2,HIGH);
@@ -336,7 +344,7 @@ void calibrate(int dir, int pwmVal, int in1, int in2){
     distravel = abs(posi);
     posi = 0;
    
-    steps = distravel/775;
+    steps = 775/distravel;
     Serial.println(distravel);
     Serial.println(steps);
     }
