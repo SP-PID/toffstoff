@@ -5,8 +5,8 @@
 #define ENCB 2 // WHITE
 #define IN1 5
 #define IN2 6
-#define END_top 8
-#define END_bot 9
+#define END_top 9
+#define END_bot 8
 
 volatile int posi = 0; // specify posi as volatile: https://www.arduino.cc/reference/en/language/variables/variable-scope-qualifiers/volatile/
 long prevT = 0;
@@ -26,6 +26,7 @@ int distravel = 0;
 float steps = 0;
 int top = 0;
 int bot = 0;
+int pos_old = 0;
 
 void setup() {
   Serial.begin(115200);
@@ -39,7 +40,7 @@ void setup() {
   pinMode(IN1,OUTPUT);
   pinMode(IN2,OUTPUT);
   
-  Serial.println("target pos");
+  //Serial.println("target pos");
   //calibrate(dir, pwr, IN1, IN2);
 }
   
@@ -57,7 +58,8 @@ void loop() {
     Serial.println(readString);
     if (readString == "calibrate")
     {
-      Serial.println("Start Calibrate");
+      Serial.println("Calibrate now");
+      //Serial.println("Start Calibrate");
       calibrate(dir, pwr, IN1, IN2);
       Serial.println("Calibrate done"); 
     } 
@@ -163,10 +165,10 @@ void run(){
     char c = Serial.read(); //gets one byte from serial buffer
     readString += c; //makes the String readString
     delay(2); //slow looping to allow buffer to fill with next character
-    Serial.println("Núna hér");
+    //Serial.println("Núna hér");
   }
   int end = readString.length();
-  Serial.println(target);
+  //Serial.println(target);
   if (readString.length() > 0) 
   {
     if (readString == "stop"){
@@ -253,14 +255,19 @@ void run(){
 
   // store previous error
   eprev = e;
-
+  if (pos_old != pos){
+    //Serial.print(millis());
+    //Serial.print(',');
+    Serial.println(pos);
+    pos_old = pos;
+  }
   //Serial.print(target);
   //Serial.print(" ");
   //Serial.println(pos);
   //Serial.println();
 }}
 void setMotor(int dir, int pwmVal,int in1, int in2){
-  Serial.println(Flag);
+  //Serial.println(Flag);
   if(dir == 1 && Flag != 2){
     Flag = 0;
     analogWrite(in1,pwmVal);
@@ -270,7 +277,7 @@ void setMotor(int dir, int pwmVal,int in1, int in2){
       digitalWrite(in1,HIGH);
       digitalWrite(in2,HIGH);
       Flag = 2;
-      Serial.println("Top");
+      //Serial.println("Top");
     }
     
   }
@@ -283,7 +290,7 @@ void setMotor(int dir, int pwmVal,int in1, int in2){
       digitalWrite(in2,HIGH);
       
       Flag = 1;
-      Serial.println("BOTTOM");
+      //Serial.println("BOTTOM");
     }
     
   }
@@ -308,7 +315,7 @@ void readEncoder(){
 
  
 void calibrate(int dir, int pwmVal, int in1, int in2){
-    Serial.println("prufa");
+    //Serial.println("prufa");
     delay(1000);
     bot =digitalRead(END_bot);
     //top =digitalRead(END_top);
@@ -346,5 +353,5 @@ void calibrate(int dir, int pwmVal, int in1, int in2){
    
     steps = 775/distravel;
     Serial.println(distravel);
-    Serial.println(steps);
+    //Serial.println(steps);
     }

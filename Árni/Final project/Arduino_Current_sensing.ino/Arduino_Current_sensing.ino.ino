@@ -1,8 +1,8 @@
 #include <util/atomic.h> // For the ATOMIC_BLOCK macro
 #include <SPI.h>
 #include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
+//#include <Adafruit_GFX.h>
+//#include <Adafruit_SSD1306.h>
 #include <Adafruit_INA219.h>
 
 Adafruit_INA219 ina219;
@@ -25,9 +25,9 @@ float power;
 void setup() {
   Serial.begin(115200);
 
-  if(!display.begin(SSD1306_SWITCHCAPVCC)) {
-    Serial.println(F("SSD1306 allocation failed"));
-    for(;;); // Don't proceed, loop forever
+  //if(!display.begin(SSD1306_SWITCHCAPVCC)) {
+  //  Serial.println(F("SSD1306 allocation failed"));
+  //  for(;;); // Don't proceed, loop forever
   }
 
   if (! ina219.begin()) {
@@ -37,13 +37,13 @@ void setup() {
 
   Serial.println("Measuring voltage and current with INA219 ...");
 
-display.display();
-  delay(500);
+//display.display();
+//  delay(500);
 
-display.clearDisplay();
+//display.clearDisplay();
 
-display.setTextColor(SSD1306_WHITE);
-printdisplay();
+//display.setTextColor(SSD1306_WHITE);
+//printdisplay();
 }
 
 void loop() {
@@ -56,7 +56,7 @@ void loop() {
   //Serial.print(" ");
   //Serial.print(power/1000);
   Serial.println();
-  printdisplay();
+  //printdisplay();
   delay(5);
 }
 

@@ -15,6 +15,7 @@ int multiplier = 2;
 String readString = "";
 int new_position;
 boolean buttonState;
+int Flag = 0;
 
 
 void setup() {
@@ -69,7 +70,7 @@ void step() {
 void go_to_position(int requested_position) {
 // if requested position is beyond the actuators top end then go to top    
 if (requested_position > max_steps) {
-Serial.println("Top Reached");
+//Serial.println("Top Reached");
 requested_position = max_steps;
   }
 int STEPS = abs((current_position - requested_position)); // Number of steps to move
@@ -97,7 +98,7 @@ for(int y = 0; y < multiplier; y++) {
 step();
     }
   }
-  Serial.println(current_position);
+  //Serial.println(current_position);
 }
 
 // Reset the actuator before operations start
@@ -113,6 +114,7 @@ void reset_actuator() {
 
 void loop() {
 int multiplier = update_microstepping(microstepping); 
+Flag = 0
 while (Serial.available()) 
   {
     char c = Serial.read(); //gets one byte from serial buffer
@@ -157,6 +159,12 @@ new_position = readString.toInt();
 if (new_position != current_position) {
   go_to_position(new_position);
   delay(1000);
+  Flag = 1
+}
+else if (Flag == 1 && (new_position == current_position))
+{
+  Serial.println('SP aquired')
+  Flag = 0
 }
 }
 readString = "";
