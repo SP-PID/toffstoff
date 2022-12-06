@@ -16,13 +16,135 @@ import shutil
 from datetime import datetime
 from itertools import zip_longest
 import os
+import board
+from adafruit_seesaw import seesaw, rotaryio, digitalio
+import digitalio as dg
+import pwmio
+import serial
 
 global xstemp
 xstemp = 0
 
-class WriteData():
-    def __init__(self):
-        pass
+########################## DC Controller ##########################
+
+class DC_control():
+    def __init__(self) :
+        self.ser = serial.Serial(
+        port='/dev/ttyUSB0',
+        baudrate = 115200,
+        parity=serial.PARITY_NONE,
+        stopbits=serial.STOPBITS_ONE,
+        bytesize=serial.EIGHTBITS,
+        timeout=1)
+    def set_SP(self,SP_val):
+        SP_val = "p" + str(SP_val)
+        self.ser.write(str.encode(SP_val))
+    def set_P(self,P_val):
+        P_val = "p" + str(P_val)
+        self.ser.write(str.encode(P_val))
+    def set_I(self,I_val):
+        I_val = "i" + str(I_val)
+        self.ser.write(str.encode(I_val))
+    def set_D(self,D_val):
+        D_val = "d" + str(D_val)
+        self.ser.write(str.encode(D_val))
+    def run(self):
+        self.ser.write(str.encode('run'))
+    def stop(self):
+        self.ser.write(str.encode('stop'))
+    def calibrate(self):
+        self.ser.write(str.encode('calibrate'))
+    def read(self):
+        x = self.ser.readline()
+        x = x.decode(encoding='UTF-8',errors='strict')
+        return x
+    def dc_data(self):
+        x = self.read()
+        x = x.split(" ")
+        Dc = int(x[1])
+        timi = int(x[0])
+        print(x)
+        return timi, Dc
+
+########################## Stepper Controller ##########################
+
+class Stepper_control():
+    def __init__(self) :
+        self.ser = serial.Serial(
+        port='/dev/ttyUSB1',
+        baudrate = 115200,
+        parity=serial.PARITY_NONE,
+        stopbits=serial.STOPBITS_ONE,
+        bytesize=serial.EIGHTBITS,
+        timeout=1)
+    def set_SP(self,SP_val):
+        SP_val = "p" + str(SP_val)
+        self.ser.write(str.encode(SP_val))
+    def read(self):
+        x = self.ser.readline()
+        x = x.decode(encoding='UTF-8',errors='strict')
+    def calibrate(self):
+        self.ser.write(str.encode('calibrate'))
+
+########################## Read/Write encoders ##########################
+
+class Encoders():
+    def __init__(self,address,zerostate=0):
+            self.SKREF = 2500000
+            self.qt_enc = seesaw.Seesaw(board.I2C(), addr=address)
+            self.qt_enc.pin_mode(24, self.qt_enc.INPUT_PULLUP)
+            self.button = digitalio.DigitalIO(self.qt_enc, 24)
+            self.button_held = False
+            self.encoder = rotaryio.IncrementalEncoder(self.qt_enc)
+            self.last_position = 0
+            self.pos = zerostate
+            self.zerostate = zerostate
+            self.encoder.position = self.zerostate
+            print(self.encoder.position)
+
+
+    def Get_enc_val(self):
+        self.pos = -self.encoder.position
+        
+        if self.pos < 0 :
+            self.encoder.position = 0
+            self.pos = 0
+        
+        if not self.button.value and not self.button_held:
+            self.encoder.position = -self.zerostate
+            self.pos = self.zerostate
+            self.last_position = self.zerostate
+        
+        if self.pos != self.last_position:
+            if abs(abs(self.pos)-abs(self.last_position)) < 100:
+                self.position = self.pos
+                self.last_position = self.position
+                return self.position/10
+            else:
+                return self.last_position/10
+        else:
+            return self.last_position/10
+
+    def get_setpoint(self):
+        self.pos = -self.encoder.position
+        if self.pos > self.SKREF and self.pos < (self.SKREF + 10):
+            self.encoder.position = -(self.SKREF)
+            self.pos = self.SKREF
+            self.last_position = self.SKREF
+        if self.pos < 0:
+            self.encoder.position = 0
+            self.pos =0
+        if self.pos != self.last_position:
+            if abs(abs(self.pos)-abs(self.last_position)) < 100:
+                self.position = self.pos
+                self.last_position = self.position
+                return self.position
+            else:
+                return self.last_position
+        else:
+            return self.last_position
+
+########################## Bool Switch ##########################
 
 class Live():
     def __init__(self):
@@ -35,6 +157,8 @@ class Live():
         else:
             self.good = True
             print(self.good)
+
+########################## Global Variables ##########################
 
 class global_val():
     def __init__(self):
@@ -52,8 +176,6 @@ class global_val():
             self.DC_Motor = []
             self.Timi = []
 
-
-
 ########################## Write Data ##########################
 
 class SaveData():
@@ -64,7 +186,6 @@ class SaveData():
         self._running = False
 
     def StoreData(self):
-        filename = 'SP-' +str(datetime.now().strftime("%Y-%m-%d %H.%M"))+'.csv'
         listi1 = [gv.SetPoint, gv.DC_Motor, gv.Timi]
         export_data = zip_longest(*listi1, fillvalue='')
         with open("temp.csv", mode= 'w',encoding="ISO-8859-1", newline= '') as csvfile:
@@ -84,7 +205,7 @@ class SaveData():
             old_path = r'/home/pipipi/temp.csv'
             new_path = r"/media/pipipi/" + res[0] + "/temp.csv"
             shutil.move(old_path, new_path)
-            timestamp = datetime.now().strftime("%Y-%m-%d %H.%M")
+            timestamp = datetime.now().strftime("%Y-%m-%d %H.%M.%S")
             old_name = r"/media/pipipi/" + res[0]+ "/temp.csv"
             new_name = r"/media/pipipi/" + res[0]+ "/SP.PID " + timestamp + ".csv"
             os.rename(old_name,new_name)
@@ -121,12 +242,54 @@ class SaveData():
     def ewin_retry(self):
         self.ewin.destroy()
         self.StoreData()
-        
 
-
+dc_control = DC_control()
+stepper_control = Stepper_control()
 live = Live()
 gv = global_val()
 savedata = SaveData()
+kp = Encoders(0x38)
+ki = Encoders(0x37)
+kd = Encoders(0x36)
+sp = Encoders(0x3a)
+
+########################## Threads ##########################
+
+class get_values_thread():
+    def __init__(self):
+        self.running =True
+    
+    def terminate(self):
+        self.running = False
+    
+    def run(self):
+        kpold = kp.Get_enc_val()
+        spold = sp.get_setpoint()
+        kiold = ki.Get_enc_val()
+        kdold = kd.Get_enc_val() 
+        while True:
+            gv.sptemp = sp.get_setpoint() * 10
+            #print(gv.sptemp)
+            kptemp = kp.Get_enc_val()
+            kitemp = ki.Get_enc_val()
+            kdtemp = kd.Get_enc_val()
+            #print(gv.sptemp)
+            if not sp.button.value and not sp.button_held:
+                gv.sp = gv.sptemp
+                dc_control.set_SP(gv.sptemp)
+                stepper_control.set_SP(gv.sptemp)
+            if kpold != kptemp:
+                gv.kp = kptemp
+                kpold = kptemp
+                dc_control.set_P(kptemp)
+            if kiold != kitemp:
+                gv.ki = kitemp
+                kiold = kitemp
+                dc_control.set_I(kitemp)
+            if kdold != kdtemp:
+                gv.kd = kdtemp
+                kdold = kdtemp
+                dc_control.set_D(kdtemp)
 
 class WriteDataThread():
     def __init__(self):
@@ -137,10 +300,9 @@ class WriteDataThread():
 
     def run(self):
         while True:
-            while live.good is True:
-                self.sp = random.randint(0,100)
-                self.dc = random.randint(100,200)
-                self.timi = random.randint(200,300)
+            while live.good is False:
+                self.sp = gv.sptemp
+                self.timi, self.dc = dc_control.dc_data()
                 gv.SetPoint.append(self.sp)
                 gv.DC_Motor.append(self.dc)
                 gv.Timi.append(self.timi)
@@ -148,7 +310,9 @@ class WriteDataThread():
             time.sleep(0.001)
 
 
-
+get_values = get_values_thread()
+get_values = Thread(target= get_values.run)
+get_values.start()
 
 writedata_thread =  WriteDataThread()
 writedata_thread = Thread(target= writedata_thread.run)
@@ -163,23 +327,14 @@ def on_escape(event=None):
     sys.exit()
     #bæta hér við að slökkva á mótorum
 
-def store():
-    original = r'C:\Users\Ron\Deskto p\Test_1\products.csv'
-    target = r'C:\Users\Roon\Desktop\Test_2\products.csv'
-    
-    shutil.copyfile(original, target)
-
-def reset():
-    pass
-
 ########################## GUI STARTS ##########################
 
 # update PID values from encoders
 def update():
-    label1['text'] = "K_p = " + str(1)
-    label2['text'] = "K_i = " + str(2)
-    label3['text'] = "K_d = " + str(3)
-    label4['text'] = "SP = " + str(4)
+    label1['text'] = "K_p = " + str(gv.kp)
+    label2['text'] = "K_i = " + str(gv.ki)
+    label3['text'] = "K_d = " + str(gv.kd)
+    label4['text'] = "SP = " + str(gv.sp)
     if live.good is True:
         takki1['bg'] = "green"
         takki1['text'] = "Record"
@@ -203,12 +358,12 @@ def init():
 # function for live animation on the BIG graph
 def Big_Plot(i, y1, y2):
 
-    y = random.randint(0,100)
-    y1.append(y)
+    #y = random.randint(0,100)
+    y1.append(gv.DC_Motor[-1])
     y1 = y1[-x_len:]
 
-    y = random.randint(100,200)
-    y2.append(y)
+    #y = random.randint(100,200)
+    y2.append(gv.SetPoint[-1])
     y2 = y2[-x_len:]
 
     ylist = [y1, y2]

@@ -51,7 +51,11 @@ class global_val():
             self.SetPoint = []
             self.DC_Motor = []
             self.Timi = []
-
+            self.animate = False
+            self.xstemp = 0
+            self.xstemp1 = 0
+            self.xstemp2 = 0
+            self.xstemp3 = 0
 
 
 ########################## Write Data ##########################
@@ -148,11 +152,13 @@ def update():
         takki1['activebackground'] = "green"
         takki1['fg'] = "white"
         takki1['activeforeground'] = "white"
+        gv.animate = False
     else:
         takki1['bg'] = "red"
         takki1['activebackground'] = "red"
         takki1['fg'] = "black"
         takki1['activeforeground'] = "black"
+        gv.animate = True
     frame3.after(50, update) # run itself again after 200 ms
 
 # creates lists of lists for the big plot
@@ -162,82 +168,96 @@ def init():
     return lines
 
 # function for live animation on the BIG graph
-def Big_Plot(i, y1, y2):
-
-    y = random.randint(0,100)
-    y1.append(y)
-    y1 = y1[-x_len:]
-
-    y = random.randint(100,200)
-    y2.append(y)
+def Big_Plot(i, y1, y2,xs):
+    
+    if gv.animate:
+        y = random.randint(0,100)
+        y1.append(y)
+        
+        y = random.randint(100,200)
+        y2.append(y)
+        if gv.xstemp < x_len - 1:
+            gv.xstemp += 1
+        else:    
+            xs = xs[-x_len:]
+        xs.append(gv.xstemp)
     y2 = y2[-x_len:]
+    y1 = y1[-x_len:]
 
     ylist = [y1, y2]
 
-    #for index in range(0,1):
+#for index in range(0,1):
     for lnum,line in enumerate(lines):
-        line.set_ydata(ylist[lnum]) # set data for each line separately. 
+        line.set_data(xs, ylist[lnum]) # set data for each line separately. 
     return lines
 
 # function for live animation on small graph no 1
 def small_plot1(i, ys, xs):
+    if gv.animate:
+        # Read temperature (Celsius) from TMP102
+        K_p = random.randint(0,50)     
 
-    # Read temperature (Celsius) from TMP102
-    K_p = random.randint(0,50)     
+        # Add y to list
+        ys.append(K_p)
+        
+        if gv.xstemp1 < x_len - 1:
+            gv.xstemp1 += 1
+        else:    
+            xs = xs[-x_len:]
+        #xs.insert(0,time)
+        xs.append(gv.xstemp1)
+        # Limit y list to set number of items
+        #ys = ys[-x_len:]
+        ys = ys[-x_len:]
 
-    # Add y to list
-    ys.append(K_p)
-    global xstemp
-    if xstemp < x_len - 1:
-        xstemp += 1
-    else:    
-        xs = xs[-x_len:]
-    #xs.insert(0,time)
-    xs.append(xstemp)
-    # Limit y list to set number of items
-    #ys = ys[-x_len:]
-    ys = ys[-x_len:]
-
-    # Update line with new Y values
-    line2.set_data(xs,ys)
-    #line2.set_xdata(xs)
+        # Update line with new Y values
+        line2.set_data(xs,ys)
+        #line2.set_xdata(xs)
 
     return line2,
 
 # function for live animation on small graph no 2
 def small_plot2(i, ys, xs):
+    if gv.animate:
+        # Read temperature (Celsius) from TMP102
+        K_i = random.randint(0,50)    
 
-    # Read temperature (Celsius) from TMP102
-    K_i = random.randint(0,50)    
-    global xstemp
+        ys.append(K_i)
+        if gv.xstemp2 < x_len - 1:
+            gv.xstemp2 += 1
+        else:    
+            xs = xs[-x_len:]
+        # Add y to list
+        xs.append(gv.xstemp2)
 
-    ys.append(K_i)
-    if xstemp >= x_len:
-        xs = xs[-x_len:]
-    # Add y to list
-    xs.append(xstemp)
+        # Limit y list to set number of items
+        ys = ys[-x_len:]
 
-    # Limit y list to set number of items
-    ys = ys[-x_len:]
-
-    # Update line with new Y values
-    line3.set_data(xs, ys)
+        # Update line with new Y values
+        line3.set_data(xs, ys)
 
     return line3,
 
 # function for live animation on small graph no 3
-def small_plot3(i, ys):
+def small_plot3(i, ys, xs):
+    if gv.animate:
+        # Read temperature (Celsius) from TMP102
+        K_d = random.randint(0,50)    
 
-    # get data for D
-    K_d = random.randint(0,50)    
+        ys.append(K_d)
+        if gv.xstemp3 < x_len - 1:
+            gv.xstemp3 += 1
+        else:    
+            xs = xs[-x_len:]
+        # Add y to list
+        xs.append(gv.xstemp3)
 
-    # Add y to list
-    ys.append(K_d)
+        # Limit y list to set number of items
+        ys = ys[-x_len:]
 
-    # Limit y list to set number of items
-    ys = ys[-x_len:]
-    # Update line with new Y values
-    line4.set_ydata(ys)
+        # Update line with new Y values
+        line4.set_data(xs, ys)
+
     return line4,
 
 # Constants to construct plots
@@ -250,7 +270,7 @@ INTERVALS = 0
 splash = Tk()
 splash.title("Loading screen")
 splash.geometry("1024x600")
-splash.attributes("-fullscreen", True)
+#splash.attributes("-fullscreen", True)
 splash.wm_attributes("-topmost", True)
 rammi = Frame(splash, width=1024, height= 600)
 rammi.pack()
@@ -262,6 +282,7 @@ splash.wm_attributes('-transparentcolor','#ab23ff')
 img= ImageTk.PhotoImage(Image.open("Loading.png"))
 rammi = Label(rammi, image= img)
 rammi.pack()
+
 
 win= Tk()
 
@@ -295,8 +316,8 @@ plt.subplots_adjust(left= 0.05,right= 0.96,bottom= 0.05, top= 0.96)
 
 ax1 = figure.add_subplot(gs[:,0:29],)
 ax1.grid(linestyle= '--')
-xs = list(range(0,x_len))
-ys = [0]* x_len
+xs = []
+ys = []
 ax1.set_ylim(y_range)
 ax1.set_xlim(x_range)
 ax1.set_title("SP.PID")
@@ -308,11 +329,11 @@ for index in range(2):
     lobj = ax1.plot([],[],lw=2,color=plotcols[index])[0]
     lines.append(lobj)
 
-y1 = [0] * x_len
-y2 = [0] * x_len
+y1 = []
+y2 = []
 
 # call the animator.  blit=True means only re-draw the parts that have changed.
-anim = animation.FuncAnimation(figure, Big_Plot, fargs= (y1,y2), init_func=init,
+anim = animation.FuncAnimation(figure, Big_Plot, fargs= (y1,y2,xs), init_func=init,
                                 interval=INTERVALS, blit=True)
 
 
@@ -326,6 +347,7 @@ plot2.set_ylim(y_range)
 plot2.set_xlim(x_range)
 plot2.set_title('PWM', rotation='vertical',x=1.1,y=0.3)
 line2, = plot2.plot(xs,ys, color= "red")
+
 ani2 = animation.FuncAnimation(figure,
     small_plot1,
     fargs=(ys,xs,),
@@ -335,34 +357,34 @@ ani2 = animation.FuncAnimation(figure,
 ################ SMALL PLOT 2 ################
 
 plot3 = figure.add_subplot(gs[13:22,31:40])
-xs = []
-ys = []
+xa = []
+ya = []
 plot3.set_ylim(y_range)
 plot3.set_xlim(x_range)
 plot3.set_title('PWM', rotation='vertical',x=1.1,y=0.3)
-line3, = plot3.plot(xs,ys, color= "red")
+line3, = plot3.plot(xa,ya, color= "red")
 
 ani3 = animation.FuncAnimation(figure,
-    small_plot2,
-    fargs=(ys,xs,),
-    interval=INTERVALS,
-    blit=True)
+        small_plot2,
+        fargs=(ya,xa,),
+        interval=INTERVALS,
+        blit=True)
 
 ################ SMALL PLOT 3 ################
 
 plot4 = figure.add_subplot(gs[25:34,31:40])
-xs = list(range(0,x_len))
-ys = [0]* x_len
+xb = []
+yb = []
 plot4.set_ylim(y_range)
 plot4.set_xlim(x_range)
 plot4.set_title('K_d', rotation='vertical',x=1.1,y=0.3)
-line4, = plot4.plot(xs,ys, color= "red")
+line4, = plot4.plot(xb,yb, color= "red")
 
 ani4 = animation.FuncAnimation(figure,
-    small_plot3,
-    fargs=(ys,),
-    interval=INTERVALS,
-    blit=True)
+        small_plot3,
+        fargs=(yb,xb,),
+        interval=INTERVALS,
+        blit=True)
 
 ###############################################################################
 
@@ -407,8 +429,10 @@ takki4.grid(row =3, column =7)
 update()
 def winmain():
     splash.destroy()
+    #gv.animate= True
+    #print(gv.animate)
 #    win.mainloop()
 
-splash.after(400, winmain)
+splash.after(4000, winmain)
 
 splash.mainloop()
