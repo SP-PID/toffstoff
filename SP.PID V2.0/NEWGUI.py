@@ -116,12 +116,12 @@ def small_plot1(i, ys):
 
     # Add y to list
     ys.insert(0,K_p)
-    #xs.insert(0,time)
+    xs.insert(0,time)
 
     # Limit y list to set number of items
     #ys = ys[-x_len:]
     ys = ys[:x_len]
-    #xs = xs[:x_len]
+    xs = xs[:x_len]
     # Update line with new Y values
     line2.set_ydata(ys)
     #line2.set_xdata(xs)
@@ -240,10 +240,10 @@ anim = animation.FuncAnimation(figure, Big_Plot, fargs= (y1,y2), init_func=init,
 ################ SMALL PLOT 1 ################
 
 plot2 = figure.add_subplot(gs[1:10,31:40])
-xs = list(range(0,x_len))
-ys = [0]* x_len
-plot2.set_ylim([-255,255])
-plot2.set_xlim([0,x_len])
+xs = [0] * x_len #list(range(0,x_len))
+ys = [0] * x_len
+#plot2.set_ylim([-255,255])
+#plot2.set_xlim([0,x_len])
 plot2.set_title('PWM', rotation='vertical',x=1.1,y=0.3)
 line2, = plot2.plot(xs,ys, color= "red")
 

@@ -3715,7 +3715,7 @@
     (property "Value" "50pF" (id 1) (at 203.2 91.4399 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Footprint" "Capacitor_THT:C_Axial_L3.8mm_D2.6mm_P7.50mm_Horizontal" (id 2) (at 200.3552 93.98 0)
+    (property "Footprint" "Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P2.50mm" (id 2) (at 200.3552 93.98 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (id 3) (at 199.39 90.17 0)
@@ -3810,7 +3810,7 @@
     (property "Value" "50pF" (id 1) (at 214.63 91.4399 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Footprint" "Capacitor_THT:C_Axial_L3.8mm_D2.6mm_P7.50mm_Horizontal" (id 2) (at 211.7852 93.98 0)
+    (property "Footprint" "Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P2.50mm" (id 2) (at 211.7852 93.98 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (id 3) (at 210.82 90.17 0)
@@ -4102,10 +4102,10 @@
       (reference "A2") (unit 1) (value "Arduino_Nano_v2.x") (footprint "Module:Arduino_Nano")
     )
     (path "/bd832800-697f-44a1-870d-899ade8c01f5"
-      (reference "C1") (unit 1) (value "50pF") (footprint "Capacitor_THT:C_Axial_L3.8mm_D2.6mm_P7.50mm_Horizontal")
+      (reference "C1") (unit 1) (value "50pF") (footprint "Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P2.50mm")
     )
     (path "/cc64e259-557f-4aff-b6e2-10dc8c9307b1"
-      (reference "C2") (unit 1) (value "50pF") (footprint "Capacitor_THT:C_Axial_L3.8mm_D2.6mm_P7.50mm_Horizontal")
+      (reference "C2") (unit 1) (value "50pF") (footprint "Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P2.50mm")
     )
     (path "/9526c35e-f462-4d06-96b7-03a3e961c38d"
       (reference "J1") (unit 1) (value "Raspberry_Pi_2_3") (footprint "Connector_PinHeader_2.54mm:PinHeader_2x20_P2.54mm_Vertical")
