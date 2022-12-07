@@ -30,9 +30,11 @@ int pos_old = 0;
 
 void setup() {
   Serial.begin(115200);
+  
   pinMode(ENCA,INPUT);
   pinMode(ENCB,INPUT);
   attachInterrupt(digitalPinToInterrupt(ENCA),readEncoder,RISING);
+  
   pinMode(END_top,INPUT_PULLUP);
   pinMode(END_bot,INPUT_PULLUP);
   
@@ -40,10 +42,8 @@ void setup() {
   pinMode(IN1,OUTPUT);
   pinMode(IN2,OUTPUT);
   
-  //Serial.println("target pos");
-  //calibrate(dir, pwr, IN1, IN2);
 }
-  
+
 void loop() {
  while (Serial.available()) 
   {
@@ -51,17 +51,16 @@ void loop() {
     readString += c; //makes the String readString
     delay(2); //slow looping to allow buffer to fill with next character
   }
-  int end = readString.length();
   
   if (readString.length() > 0) 
   {
     Serial.println(readString);
     if (readString == "calibrate")
     {
-      Serial.println("Calibrate now");
+      Serial.println("Calibrating");
       //Serial.println("Start Calibrate");
       calibrate(dir, pwr, IN1, IN2);
-      Serial.println("Calibrate done"); 
+      Serial.println("Calibration done!"); 
     } 
     
     if (readString == "run"){
@@ -91,10 +90,10 @@ void loop() {
   }
 
 }
-  
+
 void run(){
+    
   readString = "";
-  Flag = 0;
   while (true) {
   while (Serial.available()) 
   {
