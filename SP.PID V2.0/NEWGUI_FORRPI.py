@@ -62,7 +62,7 @@ class Estop():
 class DC_control():
     def __init__(self) :
         self.ser = serial.Serial(
-        port='/dev/ttyUSB0',
+        port='/dev/ttyUSB1',
         baudrate = 115200,
         parity=serial.PARITY_NONE,
         stopbits=serial.STOPBITS_ONE,
@@ -108,7 +108,7 @@ class DC_control():
 class Stepper_control():
     def __init__(self) :
         self.ser = serial.Serial(
-        port='/dev/ttyUSB1',
+        port='/dev/ttyUSB0',
         baudrate = 9600,
         parity=serial.PARITY_NONE,
         stopbits=serial.STOPBITS_ONE,
@@ -120,7 +120,7 @@ class Stepper_control():
     def read(self):
         x = self.ser.readline()
         x = x.decode(encoding='UTF-8',errors='strict')
-        print("stepper" + x)
+        print("stepper: " + x)
     def calibrate(self):
         self.ser.write(str.encode('cal'))
     def run(self):
@@ -369,8 +369,9 @@ class Drive_stepper_motor_thread():
         self._running = False
 
     def run(self):
+        stepper_control.run()
         while True:
-            stepper_control.set_SP(gv.sp)
+            stepper_control.set_SP(str(gv.sp))
 
 class Drive_DC_motor_thread():
     def __init__(self):
@@ -390,6 +391,10 @@ get_values.start()
 writedata_thread =  WriteDataThread()
 writedata_thread = Thread(target= writedata_thread.run)
 writedata_thread.start()
+
+drive_stepper_thread = Drive_stepper_motor_thread()
+drive_stepper_thread = Thread(target= drive_stepper_thread.run)
+drive_stepper_thread.start()
 
 ########################## GUI Functions ##########################
 

@@ -499,7 +499,7 @@ class DC_encoder_thread():
             #if e_stop_bot.value == True:
             #    print("zeroed")
             #    ser.write(0)
-            time.sleep(0.00000000001)
+            
 
 
 #dc_encoders = DC_encoders()
