@@ -47,7 +47,28 @@ void setup() {
   //pinMode(PWM,OUTPUT);
   pinMode(IN1,OUTPUT);
   pinMode(IN2,OUTPUT);
+
+  while (true)
+  {
+    while (Serial.available()) 
+    {
+        char c = Serial.read(); //gets one byte from serial buffer
+        readString += c; //makes the String readString
+        delay(2); //slow looping to allow buffer to fill with next character
+    }
+
+    end = readString.length();
+    if (readString.length() > 0) 
+    {
+        if (readString == "identify")
+        {
+            Serial.println("DC");
+            readString = "";
+            break;
+        }
+    }
   
+  }
 }
 
 void loop() {
@@ -116,7 +137,7 @@ void run(){
   long currT = micros();
   float deltaT = ((float) (currT - prevT))/( 1.0e6 );
   prevT = currT;
-  
+
   while (true) 
   {
   while (Serial.available()) 
