@@ -445,6 +445,6 @@ def winmain():
     #print(gv.animate)
 #    win.mainloop()
 
-splash.after(4000, winmain)
+splash.after(400, winmain)
 
 splash.mainloop()
