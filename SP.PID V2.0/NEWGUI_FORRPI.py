@@ -22,9 +22,6 @@ import digitalio as dg
 import pwmio
 import serial
 
-global xstemp
-xstemp = 0
-
 ########################## DC Controller ##########################
 
 class DC_control():
@@ -59,12 +56,15 @@ class DC_control():
         x = x.decode(encoding='UTF-8',errors='strict')
         return x
     def dc_data(self):
-        x = self.read()
-        x = x.split(" ")
-        Dc = int(x[1])
-        timi = int(x[0])
-        print(x)
-        return timi, Dc
+        try:
+            x = self.read()
+            x = x.split(" ")
+            Dc = int(x[1])
+            timi = int(x[0])
+            print(x)
+            return timi, Dc
+        except:
+            pass
 
 ########################## Stepper Controller ##########################
 
@@ -175,7 +175,12 @@ class global_val():
             self.SetPoint = []
             self.DC_Motor = []
             self.Timi = []
-
+            self.animate = False
+            self.xstemp = 0
+            self.xstemp1 = 0
+            self.xstemp2 = 0
+            self.xstemp3 = 0
+            self.Estop = False
 ########################## Write Data ##########################
 
 class SaveData():
@@ -243,6 +248,8 @@ class SaveData():
         self.ewin.destroy()
         self.StoreData()
 
+########################## Define Classes ##########################
+
 dc_control = DC_control()
 stepper_control = Stepper_control()
 live = Live()
@@ -309,6 +316,9 @@ class WriteDataThread():
                 time.sleep(0.001)
             time.sleep(0.001)
 
+class Drive_stepper_motor():
+    def __init__(self) -> None:
+        pass
 
 get_values = get_values_thread()
 get_values = Thread(target= get_values.run)
@@ -318,8 +328,7 @@ writedata_thread =  WriteDataThread()
 writedata_thread = Thread(target= writedata_thread.run)
 writedata_thread.start()
 
-
-########################## Button functions ##########################
+########################## GUI Functions ##########################
 
 def on_escape(event=None):
     exit = True
@@ -327,26 +336,37 @@ def on_escape(event=None):
     sys.exit()
     #bæta hér við að slökkva á mótorum
 
-########################## GUI STARTS ##########################
+def estop():
+    while gv.Estop is True:
+        '''setja upp að stoppa þræði'''
+        E_gluggi = Tk()
+        E_gluggi.columnconfigure([0,1], minsize=250)
+        E_gluggi.rowconfigure([0, 1], minsize=100)
+        E_gluggi.wm_attributes("-topmost", True)
+        E_gluggi.eval('tk::PlaceWindow . center')
+        label1 = tk.Label(text="E stop on", font=("Helvetica", 20))
+        label1.grid(row=0, column=0, columnspan=2)
+        E_gluggi.mainloop()
 
 # update PID values from encoders
 def update():
     label1['text'] = "K_p = " + str(gv.kp)
     label2['text'] = "K_i = " + str(gv.ki)
     label3['text'] = "K_d = " + str(gv.kd)
-    label4['text'] = "SP = " + str(gv.sp)
+    label4['text'] = "SP = " + str(gv.sptemp)
+    takki1['text'] = "Record"
     if live.good is True:
         takki1['bg'] = "green"
-        takki1['text'] = "Record"
         takki1['activebackground'] = "green"
         takki1['fg'] = "white"
         takki1['activeforeground'] = "white"
+        gv.animate = False
     else:
         takki1['bg'] = "red"
-        takki1['text'] = "Recording"
         takki1['activebackground'] = "red"
         takki1['fg'] = "black"
         takki1['activeforeground'] = "black"
+        gv.animate = True
     frame3.after(50, update) # run itself again after 200 ms
 
 # creates lists of lists for the big plot
@@ -356,83 +376,99 @@ def init():
     return lines
 
 # function for live animation on the BIG graph
-def Big_Plot(i, y1, y2):
-
-    #y = random.randint(0,100)
-    y1.append(gv.DC_Motor[-1])
-    y1 = y1[-x_len:]
-
-    #y = random.randint(100,200)
-    y2.append(gv.SetPoint[-1])
+def Big_Plot(i, y1, y2,xs):
+    if gv.animate:
+        y = random.randint(0,100)
+        y1.append(y)
+        
+        y = random.randint(100,200)
+        y2.append(y)
+        if gv.xstemp < x_len - 1:
+            gv.xstemp += 1
+        else:    
+            xs = xs[-x_len:]
+        xs.append(gv.xstemp)
     y2 = y2[-x_len:]
+    y1 = y1[-x_len:]
 
     ylist = [y1, y2]
 
-    #for index in range(0,1):
+#for index in range(0,1):
     for lnum,line in enumerate(lines):
-        line.set_ydata(ylist[lnum]) # set data for each line separately. 
+        line.set_data(xs, ylist[lnum]) # set data for each line separately. 
     return lines
 
 # function for live animation on small graph no 1
 def small_plot1(i, ys, xs):
+    if gv.animate:
+        # Read temperature (Celsius) from TMP102
+        K_p = random.randint(0,50)     
 
-    # Read temperature (Celsius) from TMP102
-    K_p = random.randint(0,50)     
+        # Add y to list
+        ys.append(K_p)
+        
+        if gv.xstemp1 < x_len - 1:
+            gv.xstemp1 += 1
+        else:    
+            xs = xs[-x_len:]
+        #xs.insert(0,time)
+        xs.append(gv.xstemp1)
+        # Limit y list to set number of items
+        #ys = ys[-x_len:]
+        ys = ys[-x_len:]
 
-    # Add y to list
-    ys.append(K_p)
-    global xstemp
-    if xstemp < x_len - 1:
-        xstemp += 1
-    else:    
-        xs = xs[-x_len:]
-    #xs.insert(0,time)
-    xs.append(xstemp)
-    # Limit y list to set number of items
-    #ys = ys[-x_len:]
-    ys = ys[-x_len:]
-
-    # Update line with new Y values
-    line2.set_data(xs,ys)
-    #line2.set_xdata(xs)
+        # Update line with new Y values
+        line2.set_data(xs,ys)
+        #line2.set_xdata(xs)
 
     return line2,
 
 # function for live animation on small graph no 2
 def small_plot2(i, ys, xs):
+    if gv.animate:
+        # Read temperature (Celsius) from TMP102
+        K_i = random.randint(0,50)    
 
-    # Read temperature (Celsius) from TMP102
-    K_i = random.randint(0,50)    
-    global xstemp
+        ys.append(K_i)
+        if gv.xstemp2 < x_len - 1:
+            gv.xstemp2 += 1
+        else:    
+            xs = xs[-x_len:]
+        # Add y to list
+        xs.append(gv.xstemp2)
 
-    ys.append(K_i)
-    if xstemp >= x_len:
-        xs = xs[-x_len:]
-    # Add y to list
-    xs.append(xstemp)
+        # Limit y list to set number of items
+        ys = ys[-x_len:]
 
-    # Limit y list to set number of items
-    ys = ys[-x_len:]
-
-    # Update line with new Y values
-    line3.set_data(xs, ys)
+        # Update line with new Y values
+        line3.set_data(xs, ys)
 
     return line3,
 
 # function for live animation on small graph no 3
-def small_plot3(i, ys):
+def small_plot3(i, ys, xs):
+    if gv.animate:
+        # Read temperature (Celsius) from TMP102
+        K_d = random.randint(0,50)    
 
-    # get data for D
-    K_d = random.randint(0,50)    
+        ys.append(K_d)
+        if gv.xstemp3 < x_len - 1:
+            gv.xstemp3 += 1
+        else:    
+            xs = xs[-x_len:]
+        # Add y to list
+        xs.append(gv.xstemp3)
 
-    # Add y to list
-    ys.append(K_d)
+        # Limit y list to set number of items
+        ys = ys[-x_len:]
 
-    # Limit y list to set number of items
-    ys = ys[-x_len:]
-    # Update line with new Y values
-    line4.set_ydata(ys)
+        # Update line with new Y values
+        line4.set_data(xs, ys)
+
     return line4,
+
+########################## GUI STARTS ##########################
+
 
 # Constants to construct plots
 x_len = 500
@@ -449,9 +485,6 @@ splash.wm_attributes("-topmost", True)
 rammi = Frame(splash, width=1024, height= 600)
 rammi.pack()
 rammi.place(anchor= 'center', relx= 0.5, rely= 0.5)
-#splash_label = Label(splash, text= "LOADING", font= ("helvetica", 20),bg= '#ab23ff')
-#splash_label.pack(anchor= 'w',pady=290, padx = 250)
-#splash.wm_attributes('-transparentcolor','#ab23ff')
 
 img= ImageTk.PhotoImage(Image.open("Loading.png"))
 rammi = Label(rammi, image= img)
@@ -467,7 +500,7 @@ screen_height = win.winfo_screenheight()
 # run fullscreen
 win.attributes("-fullscreen", True)
 # keep on top
-win.wm_attributes("-topmost", True)
+win.wm_attributes("-topmost", False)
 # close window with key `ESC`
 win.bind("<Escape>", on_escape)
 # hide cursor
@@ -489,8 +522,8 @@ plt.subplots_adjust(left= 0.05,right= 0.96,bottom= 0.05, top= 0.96)
 
 ax1 = figure.add_subplot(gs[:,0:29],)
 ax1.grid(linestyle= '--')
-xs = list(range(0,x_len))
-ys = [0]* x_len
+xs = []
+ys = []
 ax1.set_ylim(y_range)
 ax1.set_xlim(x_range)
 ax1.set_title("SP.PID")
@@ -502,24 +535,26 @@ for index in range(2):
     lobj = ax1.plot([],[],lw=2,color=plotcols[index])[0]
     lines.append(lobj)
 
-y1 = [0] * x_len
-y2 = [0] * x_len
+y1 = []
+y2 = []
 
 # call the animator.  blit=True means only re-draw the parts that have changed.
-anim = animation.FuncAnimation(figure, Big_Plot, fargs= (y1,y2), init_func=init,
+anim = animation.FuncAnimation(figure, Big_Plot, fargs= (y1,y2,xs), init_func=init,
                                 interval=INTERVALS, blit=True)
+
 
 
 ################ SMALL PLOT 1 ################
 
 plot2 = figure.add_subplot(gs[1:10,31:40])
-#xs = list(range(0,x_len))
+
 xs = []
 ys = []
 plot2.set_ylim(y_range)
 plot2.set_xlim(x_range)
 plot2.set_title('PWM', rotation='vertical',x=1.1,y=0.3)
 line2, = plot2.plot(xs,ys, color= "red")
+
 ani2 = animation.FuncAnimation(figure,
     small_plot1,
     fargs=(ys,xs,),
@@ -529,34 +564,34 @@ ani2 = animation.FuncAnimation(figure,
 ################ SMALL PLOT 2 ################
 
 plot3 = figure.add_subplot(gs[13:22,31:40])
-xs = []
-ys = []
+xa = []
+ya = []
 plot3.set_ylim(y_range)
 plot3.set_xlim(x_range)
 plot3.set_title('PWM', rotation='vertical',x=1.1,y=0.3)
-line3, = plot3.plot(xs,ys, color= "red")
+line3, = plot3.plot(xa,ya, color= "red")
 
 ani3 = animation.FuncAnimation(figure,
-    small_plot2,
-    fargs=(ys,xs,),
-    interval=INTERVALS,
-    blit=True)
+        small_plot2,
+        fargs=(ya,xa,),
+        interval=INTERVALS,
+        blit=True)
 
 ################ SMALL PLOT 3 ################
 
 plot4 = figure.add_subplot(gs[25:34,31:40])
-xs = list(range(0,x_len))
-ys = [0]* x_len
+xb = []
+yb = []
 plot4.set_ylim(y_range)
 plot4.set_xlim(x_range)
 plot4.set_title('K_d', rotation='vertical',x=1.1,y=0.3)
-line4, = plot4.plot(xs,ys, color= "red")
+line4, = plot4.plot(xb,yb, color= "red")
 
 ani4 = animation.FuncAnimation(figure,
-    small_plot3,
-    fargs=(ys,),
-    interval=INTERVALS,
-    blit=True)
+        small_plot3,
+        fargs=(yb,xb,),
+        interval=INTERVALS,
+        blit=True)
 
 ###############################################################################
 
