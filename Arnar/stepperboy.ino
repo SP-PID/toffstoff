@@ -1,10 +1,10 @@
 // Define Constants
 
-const int dirPin = 2; // Direction
-const int stepPin = 3; // Step
-const int ms1 = 6;
-const int ms2 = 7;
-const int endPin = 4;
+const int dirPin = 7; // Direction
+const int stepPin = 6; // Step
+const int ms1 = 3;
+const int ms2 = 4;
+const int endPin = 2;
 char input;
 int current_position = 0;
 int direction = 0;
@@ -15,11 +15,10 @@ int multiplier = 2;
 String readString = "";
 int new_position;
 boolean buttonState;
-int Flag = 0;
-
+boolean running = false;
 
 void setup() {
-Serial.begin(115200);
+Serial.begin(9600);
 pinMode(stepPin,OUTPUT);
 pinMode(dirPin,OUTPUT);
 pinMode(ms1,OUTPUT);
@@ -68,37 +67,31 @@ void step() {
 }
 
 void go_to_position(int requested_position) {
-// if requested position is beyond the actuators top end then go to top    
-if (requested_position > max_steps) {
-//Serial.println("Top Reached");
+if (requested_position < 0){
+  return 0;
+}
+if (requested_position > max_steps) { // if requested position is beyond the actuators top end then go to top   
 requested_position = max_steps;
   }
 int STEPS = abs((current_position - requested_position)); // Number of steps to move
-Serial.println(STEPS);
-if (STEPS == 0){    
-// if the number of steps to go is zero then do nothing
+if (STEPS == 0){ // if the number of steps to go is zero then do nothing   
   return 0;
   }
-if (current_position > requested_position){
-// set direction of travel to down   
+if (current_position > requested_position){ // set direction of travel to down 
 digitalWrite(dirPin,LOW);  
 direction = 1;
   }
-if (current_position < requested_position){
-// set direction of travel to up
+if (current_position < requested_position){ // set direction of travel to up
 digitalWrite(dirPin,HIGH);  
 direction = 0;
   }
-// move to requested position
-for(int x = 0; x < STEPS; x++) {
-// update current position for each step
-current_position = update_position(current_position,direction);  
+for(int x = 0; x < STEPS; x++) { // move to requested position
+current_position = update_position(current_position,direction);  // update current position for each step
 for(int y = 0; y < multiplier; y++) {
-// one step
-step();
+step(); // one step
     }
   }
-  //Serial.println(current_position);
+Serial.println("SP");
 }
 
 // Reset the actuator before operations start
@@ -106,42 +99,16 @@ void reset_actuator() {
     digitalWrite(dirPin,LOW);  // set direction of travel to down
     direction = 1;  
     buttonState = digitalRead(endPin); 
-    while (buttonState){
+    while (!buttonState){
         buttonState = digitalRead(endPin); 
         step(); // one step per repetition of loop untill actuator is at zero
     }
+    Serial.println("ZE");
 }
 
+
 void loop() {
-int multiplier = update_microstepping(microstepping); 
-Flag = 0
-while (Serial.available()) 
-  {
-    char c = Serial.read(); //gets one byte from serial buffer
-    readString += c; //makes the String readString
-    delay(2); //slow looping to allow buffer to fill with next character
-  }
-  
- int end = readString.length();
- if (end > 0) {
-    if (end == "run"){
-        run();
-    }
-    if (end = "calibrate"){
-        reset_actuator();
-    }
-
-// Serial.println(readString);
-// new_position = readString.toInt();
-// if (new_position != current_position) {
-//   go_to_position(new_position);
-//   delay(1000);
-// }
-// }
-// readString = "";
-}}
-
-void run(){
+//Serial.println("Loop begins");
 int multiplier = update_microstepping(microstepping); 
 while (Serial.available()) 
   {
@@ -151,24 +118,37 @@ while (Serial.available())
   }
 int end = readString.length();
 if (end > 0) {
-if (end == 'stop'){
-    break;
-}    
-//Serial.println(readString);
-new_position = readString.toInt();
-if (new_position != current_position) {
-  go_to_position(new_position);
-  delay(1000);
-  Flag = 1
-}
-else if (Flag == 1 && (new_position == current_position))
-{
-  Serial.println('SP aquired')
-  Flag = 0
-}
+    if (readString == "run"){
+        //Serial.println("Run command");
+        running = true;
+    }
+    if (readString == "notrun"){
+        //Serial.println("Stop running command");
+        running = false;
+    }
+    if (readString == "cal"){
+        //Serial.println("Resetting Setpoint actuator");
+        reset_actuator();
+    }
+if (running == true) {
+  new_position = readString.toInt();
+  //Serial.println(new_position);
+  if (new_position != current_position) {
+      go_to_position(new_position);
+      delay(1000);
+    }
+  //Serial.println(current_position);
 }
 readString = "";
 }
+}
+
+
+
+
+
+
+
 
 
 
