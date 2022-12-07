@@ -119,25 +119,25 @@ while (Serial.available())
 int end = readString.length();
 if (end > 0) {
     if (readString == "run"){
-        //Serial.println("Run command");
+        Serial.println("Run command");
         running = true;
     }
     if (readString == "notrun"){
-        //Serial.println("Stop running command");
+        Serial.println("Stop running command");
         running = false;
     }
     if (readString == "cal"){
-        //Serial.println("Resetting Setpoint actuator");
+        Serial.println("Resetting Setpoint actuator");
         reset_actuator();
     }
 if (running == true) {
   new_position = readString.toInt();
-  //Serial.println(new_position);
+  Serial.println(new_position);
   if (new_position != current_position) {
       go_to_position(new_position);
       delay(1000);
     }
-  //Serial.println(current_position);
+  Serial.println(current_position);
 }
 readString = "";
 }

@@ -25,6 +25,7 @@ pinMode(ms1,OUTPUT);
 pinMode(ms2,OUTPUT);
 pinMode(endPin,INPUT_PULLUP);
 reset_actuator();
+//Serial.println("Setup complete!");
 }
 
 
@@ -106,6 +107,7 @@ void reset_actuator() {
     Serial.println("ZE");
 }
 
+void(* resetFunc) (void) = 0;//declare reset function at address 0
 
 void loop() {
 //Serial.println("Loop begins");
@@ -130,14 +132,19 @@ if (end > 0) {
         //Serial.println("Resetting Setpoint actuator");
         reset_actuator();
     }
+    if (readString == "rst"){
+      //Serial.println("Reset command");
+      delay(1000);
+      resetFunc();
+    }
 if (running == true) {
   new_position = readString.toInt();
-  //Serial.println(new_position);
+  Serial.println(new_position);
   if (new_position != current_position) {
       go_to_position(new_position);
       delay(1000);
     }
-  //Serial.println(current_position);
+  Serial.println(current_position);
 }
 readString = "";
 }
