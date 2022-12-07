@@ -1,10 +1,10 @@
 // Define Constants
 
-const int dirPin = 2; // Direction
-const int stepPin = 3; // Step
-const int ms1 = 6;
-const int ms2 = 7;
-const int endPin = 4;
+const int dirPin = 7; // Direction
+const int stepPin = 6; // Step
+const int ms1 = 3;
+const int ms2 = 4;
+const int endPin = 2;
 char input;
 int current_position = 0;
 int direction = 0;
@@ -15,11 +15,10 @@ int multiplier = 2;
 String readString = "";
 int new_position;
 boolean buttonState;
-int Flag = 0;
 
 
 void setup() {
-Serial.begin(115200);
+Serial.begin(9600);
 pinMode(stepPin,OUTPUT);
 pinMode(dirPin,OUTPUT);
 pinMode(ms1,OUTPUT);
@@ -51,6 +50,7 @@ int update_microstepping(int microstepping) {
 
 // update position keeps track of current gantry position
 int update_position(int current_position,char direction[]) {
+  //Serial.println(current_position);
   if (direction == 1){
     return current_position - 1;
   }
@@ -70,7 +70,7 @@ void step() {
 void go_to_position(int requested_position) {
 // if requested position is beyond the actuators top end then go to top    
 if (requested_position > max_steps) {
-//Serial.println("Top Reached");
+Serial.println("Top Reached");
 requested_position = max_steps;
   }
 int STEPS = abs((current_position - requested_position)); // Number of steps to move
@@ -98,50 +98,26 @@ for(int y = 0; y < multiplier; y++) {
 step();
     }
   }
-  //Serial.println(current_position);
+  Serial.println(current_position);
 }
 
-// Reset the actuator before operations start
 void reset_actuator() {
-    digitalWrite(dirPin,LOW);  // set direction of travel to down
+    digitalWrite(dirPin,LOW);  
     direction = 1;  
-    buttonState = digitalRead(endPin); 
-    while (buttonState){
-        buttonState = digitalRead(endPin); 
-        step(); // one step per repetition of loop untill actuator is at zero
+    buttonState = digitalRead(endPin);
+   // Serial.println(buttonState);    
+    while (!buttonState){
+        buttonState = digitalRead(endPin);
+       // Serial.println(buttonState); 
+        step();
     }
 }
+
+
+
 
 void loop() {
-int multiplier = update_microstepping(microstepping); 
-Flag = 0
-while (Serial.available()) 
-  {
-    char c = Serial.read(); //gets one byte from serial buffer
-    readString += c; //makes the String readString
-    delay(2); //slow looping to allow buffer to fill with next character
-  }
-  
- int end = readString.length();
- if (end > 0) {
-    if (end == "run"){
-        run();
-    }
-    if (end = "calibrate"){
-        reset_actuator();
-    }
 
-// Serial.println(readString);
-// new_position = readString.toInt();
-// if (new_position != current_position) {
-//   go_to_position(new_position);
-//   delay(1000);
-// }
-// }
-// readString = "";
-}}
-
-void run(){
 int multiplier = update_microstepping(microstepping); 
 while (Serial.available()) 
   {
@@ -151,20 +127,11 @@ while (Serial.available())
   }
 int end = readString.length();
 if (end > 0) {
-if (end == 'stop'){
-    break;
-}    
-//Serial.println(readString);
+Serial.println(readString);
 new_position = readString.toInt();
 if (new_position != current_position) {
   go_to_position(new_position);
   delay(1000);
-  Flag = 1
-}
-else if (Flag == 1 && (new_position == current_position))
-{
-  Serial.println('SP aquired')
-  Flag = 0
 }
 }
 readString = "";

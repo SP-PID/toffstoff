@@ -42,24 +42,32 @@ class DC_control():
         stopbits=serial.STOPBITS_ONE,
         bytesize=serial.EIGHTBITS,
         timeout=1)
+    
     def set_SP(self,SP_val):
         SP_val = "p" + str(SP_val)
         self.ser.write(str.encode(SP_val))
+    
     def set_P(self,P_val):
         P_val = "p" + str(P_val)
         self.ser.write(str.encode(P_val))
+    
     def set_I(self,I_val):
         I_val = "i" + str(I_val)
         self.ser.write(str.encode(I_val))
+    
     def set_D(self,D_val):
         D_val = "d" + str(D_val)
         self.ser.write(str.encode(D_val))
+    
     def run(self):
         self.ser.write(str.encode('run'))
+    
     def stop(self):
         self.ser.write(str.encode('stop'))
+    
     def calibrate(self):
         self.ser.write(str.encode('calibrate'))
+    
     def read(self):
         x = self.ser.readline()
         x = x.decode(encoding='UTF-8',errors='strict')
