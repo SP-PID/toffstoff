@@ -136,7 +136,19 @@ def store():
     shutil.copyfile(original, target)
 
 def reset():
-    pass
+        while True:
+            '''stoppa motora'''
+            E_gluggi = Tk()
+            E_gluggi.columnconfigure([0,1], minsize=250)
+            E_gluggi.rowconfigure([0, 1], minsize=100)
+            E_gluggi.attributes("-fullscreen", False)
+            E_gluggi.attributes("-topmost", True)
+            E_gluggi.configure(background= 'red')
+            E_gluggi.eval('tk::PlaceWindow . center')
+            label1 = tk.Label(text="E stop on", font=("Helvetica", 20),bg= 'red')
+            label1.grid(row=0, column=0, columnspan=2)
+            E_gluggi.mainloop()
+            E_gluggi.after(4000, E_gluggi.destroy())
 
 ########################## GUI STARTS ##########################
 
@@ -294,7 +306,7 @@ screen_height = win.winfo_screenheight()
 # run fullscreen
 #win.attributes("-fullscreen", True)
 # keep on top
-win.wm_attributes("-topmost", True)
+win.wm_attributes("-topmost", False)
 # close window with key `ESC`
 win.bind("<Escape>", on_escape)
 # hide cursor
@@ -420,10 +432,10 @@ takki2 = tk.Button(master= win,activebackground= None, text= "Exit", command= on
 takki2.grid(row =3, column =5)
 
 takki3 = tk.Button(master= win,activebackground= None, text= "Save", command= savedata.StoreData)
-takki3.grid(row =3, column =6)
+takki3.grid(row =3, column =7)
 
-takki4 = tk.Button(master= win,activebackground= None, text= "Reset", command= on_escape)
-takki4.grid(row =3, column =7)
+takki4 = tk.Button(master= win,activebackground= None, text= "Reset", command= reset)
+takki4.grid(row =3, column =6)
 
 # run first time
 update()
