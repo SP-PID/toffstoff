@@ -22,6 +22,41 @@ import digitalio as dg
 import pwmio
 import serial
 
+########################## Estop ##########################
+
+class Estop():
+    def __init__(self) -> None:
+        self.EHnappur = dg.DigitalInOut(board.D18)
+        
+    def estop_destroy(self):
+        if self.EHnappur.value is True:
+            self.E_gluggi.destroy()
+        else:
+            pass
+
+    def estop(self):
+        while True:
+            if self.EHnappur.value is False:
+                '''stoppa motora'''
+                self.E_gluggi = Tk()
+                self.E_gluggi.columnconfigure([0,1], minsize=250)
+                self.E_gluggi.rowconfigure([0, 2], minsize=100)
+                self.E_gluggi.attributes("-fullscreen", True)
+                self.E_gluggi.attributes("-topmost", True)
+                self.E_gluggi.configure(background= 'red')
+                self.E_gluggi.eval('tk::PlaceWindow . center')
+                label1 = tk.Label(text="EMERGENCY STOP", font=("Helvetica", 20),bg= 'red')
+                label1.grid(row=0, column=0, columnspan=2)
+                label2 = tk.Label(text="Twist button when safe", font=("Helvetica", 20),bg= 'red')
+                label2.grid(row=1, column=0, columnspan=2)
+                Etakki1 = tk.Button(master= self.E_gluggi, text= "Reset", command= self.estop_destroy)
+                Etakki1.grid(row =2, column =0, columnspan= 2)
+                self.E_gluggi.mainloop()
+
+            if self.EHnappur.value is True:
+                '''endurraesa motora'''
+                break
+
 ########################## DC Controller ##########################
 
 class DC_control():
@@ -34,7 +69,7 @@ class DC_control():
         bytesize=serial.EIGHTBITS,
         timeout=1)
     def set_SP(self,SP_val):
-        SP_val = "p" + str(SP_val)
+        SP_val = str(SP_val)
         self.ser.write(str.encode(SP_val))
     def set_P(self,P_val):
         P_val = "p" + str(P_val)
@@ -51,6 +86,8 @@ class DC_control():
         self.ser.write(str.encode('stop'))
     def calibrate(self):
         self.ser.write(str.encode('calibrate'))
+    def reset(self):
+        self.ser.write(str.encode('reset'))
     def read(self):
         x = self.ser.readline()
         x = x.decode(encoding='UTF-8',errors='strict')
@@ -72,19 +109,24 @@ class Stepper_control():
     def __init__(self) :
         self.ser = serial.Serial(
         port='/dev/ttyUSB1',
-        baudrate = 115200,
+        baudrate = 9600,
         parity=serial.PARITY_NONE,
         stopbits=serial.STOPBITS_ONE,
         bytesize=serial.EIGHTBITS,
         timeout=1)
     def set_SP(self,SP_val):
-        SP_val = "p" + str(SP_val)
+        SP_val = str(SP_val)
         self.ser.write(str.encode(SP_val))
     def read(self):
         x = self.ser.readline()
         x = x.decode(encoding='UTF-8',errors='strict')
+        print("stepper" + x)
     def calibrate(self):
-        self.ser.write(str.encode('calibrate'))
+        self.ser.write(str.encode('cal'))
+    def run(self):
+        self.ser.write(str.encode('run'))
+    def stop(self):
+        self.ser.write(str.encode('notrun'))    
 
 ########################## Read/Write encoders ##########################
 
@@ -100,7 +142,7 @@ class Encoders():
             self.pos = zerostate
             self.zerostate = zerostate
             self.encoder.position = self.zerostate
-            print(self.encoder.position)
+            #print(self.encoder.position)
 
 
     def Get_enc_val(self):
@@ -181,6 +223,7 @@ class global_val():
             self.xstemp2 = 0
             self.xstemp3 = 0
             self.Estop = False
+
 ########################## Write Data ##########################
 
 class SaveData():
@@ -226,11 +269,11 @@ class SaveData():
         self.ewin = tk.Tk()
         self.ewin.columnconfigure([0,1], minsize=250)
         self.ewin.rowconfigure([0, 1], minsize=100)
-        self.ewin.wm_attributes("-topmost", True)
+        self.ewin.attributes("-fullscreen", True)
+        self.ewin.attributes("-topmost", True)
         self.ewin.eval('tk::PlaceWindow . center')
         label1 = tk.Label(text="USB not found", font=("Helvetica", 20))
         label1.grid(row=0, column=0, columnspan=2)
-
         label2 = tk.Button(text="retry", command=self.ewin_retry)
         label2.grid(row=1, column=0)
         label3 = tk.Button(text="Cancel", command= self.ewin_destroy)
@@ -259,6 +302,7 @@ kp = Encoders(0x38)
 ki = Encoders(0x37)
 kd = Encoders(0x36)
 sp = Encoders(0x3a)
+E_stop = Estop()
 
 ########################## Threads ##########################
 
@@ -271,7 +315,6 @@ class get_values_thread():
     
     def run(self):
         kpold = kp.Get_enc_val()
-        spold = sp.get_setpoint()
         kiold = ki.Get_enc_val()
         kdold = kd.Get_enc_val() 
         while True:
@@ -280,8 +323,10 @@ class get_values_thread():
             kptemp = kp.Get_enc_val()
             kitemp = ki.Get_enc_val()
             kdtemp = kd.Get_enc_val()
+            if E_stop.EHnappur.value is False:
+                E_stop.estop()
             #print(gv.sptemp)
-            if not sp.button.value and not sp.button_held:
+            if not sp.button.value and not  sp.button_held:
                 gv.sp = gv.sptemp
                 dc_control.set_SP(gv.sptemp)
                 stepper_control.set_SP(gv.sptemp)
@@ -316,9 +361,27 @@ class WriteDataThread():
                 time.sleep(0.001)
             time.sleep(0.001)
 
-class Drive_stepper_motor():
-    def __init__(self) -> None:
-        pass
+class Drive_stepper_motor_thread():
+    def __init__(self):
+        self._running = True
+
+    def terminate(self):
+        self._running = False
+
+    def run(self):
+        while True:
+            stepper_control.set_SP(gv.sp)
+
+class Drive_DC_motor_thread():
+    def __init__(self):
+        self._running = True
+
+    def terminate(self):
+        self._running = False
+
+    def run(self):
+        while True:
+            pass
 
 get_values = get_values_thread()
 get_values = Thread(target= get_values.run)
@@ -335,18 +398,6 @@ def on_escape(event=None):
     win.destroy()
     sys.exit()
     #bæta hér við að slökkva á mótorum
-
-def estop():
-    while gv.Estop is True:
-        '''setja upp að stoppa þræði'''
-        E_gluggi = Tk()
-        E_gluggi.columnconfigure([0,1], minsize=250)
-        E_gluggi.rowconfigure([0, 1], minsize=100)
-        E_gluggi.wm_attributes("-topmost", True)
-        E_gluggi.eval('tk::PlaceWindow . center')
-        label1 = tk.Label(text="E stop on", font=("Helvetica", 20))
-        label1.grid(row=0, column=0, columnspan=2)
-        E_gluggi.mainloop()
 
 # update PID values from encoders
 def update():
@@ -378,7 +429,7 @@ def init():
 # function for live animation on the BIG graph
 def Big_Plot(i, y1, y2,xs):
     if gv.animate:
-        y = random.randint(0,100)
+        y = gv.sp
         y1.append(y)
         
         y = random.randint(100,200)
@@ -481,7 +532,7 @@ splash = Tk()
 splash.title("Loading screen")
 splash.geometry("1024x600")
 splash.attributes("-fullscreen", True)
-splash.wm_attributes("-topmost", True)
+splash.wm_attributes("-topmost", False)
 rammi = Frame(splash, width=1024, height= 600)
 rammi.pack()
 rammi.place(anchor= 'center', relx= 0.5, rely= 0.5)
@@ -500,7 +551,7 @@ screen_height = win.winfo_screenheight()
 # run fullscreen
 win.attributes("-fullscreen", True)
 # keep on top
-win.wm_attributes("-topmost", False)
+win.attributes("-topmost", False)
 # close window with key `ESC`
 win.bind("<Escape>", on_escape)
 # hide cursor
