@@ -49,14 +49,20 @@ void loop() {
     delay(2); //slow looping to allow buffer to fill with next character
   }
   end = readString.length();
+
+  if (readString == "identify")
+  {
+    Serial.println("DC");
+  }
   
   if ( readString != oldstring && end > 0)
   {
-  Serial.println(readString);
   printdisplay();
   }
   oldstring = readString;
   readString = "";
+  
+  
   delay(5);
 }
 

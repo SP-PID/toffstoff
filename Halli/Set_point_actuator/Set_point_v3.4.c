@@ -16,6 +16,7 @@ String readString = "";
 int new_position;
 boolean buttonState;
 boolean running = false;
+int end = 0;
 
 void setup() {
 Serial.begin(115200);
@@ -24,6 +25,29 @@ pinMode(dirPin,OUTPUT);
 pinMode(ms1,OUTPUT);
 pinMode(ms2,OUTPUT);
 pinMode(endPin,INPUT_PULLUP);
+
+while (true)
+  {
+    while (Serial.available()) 
+    {
+        char c = Serial.read(); //gets one byte from serial buffer
+        readString += c; //makes the String readString
+        delay(2); //slow looping to allow buffer to fill with next character
+    }
+
+    end = readString.length();
+    if (readString.length() > 0) 
+    {
+        if (readString == "identify")
+        {
+            Serial.println("Stepper");
+            readString = "";
+            break;
+        }
+    }
+  
+  }
+
 reset_actuator();
 //Serial.println("Setup complete!");
 }
@@ -149,15 +173,4 @@ if (running == true) {
 readString = "";
 }
 }
-
-
-
-
-
-
-
-
-
-
-
 
