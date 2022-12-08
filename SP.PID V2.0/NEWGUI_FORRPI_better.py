@@ -116,17 +116,22 @@ class Stepper_control():
         stopbits=serial.STOPBITS_ONE,
         bytesize=serial.EIGHTBITS,
         timeout=1)
+    
     def set_SP(self,SP_val):
         SP_val = str(SP_val)
         self.ser.write(str.encode(SP_val))
+    
     def read(self):
         x = self.ser.readline()
         x = x.decode(encoding='UTF-8',errors='strict')
         print("stepper" + x)
+    
     def calibrate(self):
         self.ser.write(str.encode('cal'))
+    
     def run(self):
         self.ser.write(str.encode('run'))
+    
     def stop(self):
         self.ser.write(str.encode('notrun'))    
 

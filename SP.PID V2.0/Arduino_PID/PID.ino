@@ -69,6 +69,7 @@ void setup() {
     }
   
   }
+  Serial.println("Ready!");
 }
 
 void loop() {
@@ -302,6 +303,7 @@ void setMotor(int dir, int pwmVal, int in1, int in2){
   // Drive up
   else if(dir == -1 && Flag != 1)
   {
+    Flag = 0;
     digitalWrite(in1, HIGH);
     analogWrite(in2, pwmVal);
     
@@ -316,6 +318,7 @@ void setMotor(int dir, int pwmVal, int in1, int in2){
   
   else
   {
+    
     digitalWrite(in1,HIGH);
     digitalWrite(in2,HIGH);
   }  
