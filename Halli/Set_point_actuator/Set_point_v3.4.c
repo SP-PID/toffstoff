@@ -123,6 +123,7 @@ Serial.println("SP");
 void reset_actuator() {
     digitalWrite(dirPin,LOW);  // set direction of travel to down
     direction = 1;  
+    current_position = 0;
     buttonState = digitalRead(endPin); 
     while (!buttonState){
         buttonState = digitalRead(endPin); 
