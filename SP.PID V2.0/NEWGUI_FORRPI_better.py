@@ -139,14 +139,14 @@ class Stepper_control():
     def read(self):
         x = self.ser.readline()
         x = x.decode(encoding='UTF-8',errors='strict')
-        x = x.strip()
+        print("stepper" + x)
         time.sleep(0.01)
 
     def write(self, value):
         self.ser.write(str.encode(value))
     
     def calibrate(self):
-        self.ser.write(str.encode('identify'))
+        self.ser.write(str.encode('cal'))
     
     def run(self):
         self.ser.write(str.encode('run'))
@@ -362,10 +362,7 @@ for port in avableports:
         time.sleep(1.5)
         dc_control.write("identify")
         time.sleep(0.25)
-        temp = dc_control.read()
-        print("answer: ",temp)
-        
-        if temp == "DC":
+        if dc_control.read == "DC":
             print("DC control active!")
         else:
             print("DC controll Error!")
@@ -374,15 +371,21 @@ for port in avableports:
         stepper_control = Stepper_control(port)
         time.sleep(1.5)
         stepper_control.write("identify")
-        time.sleep(1)
-        temp = stepper_control.read()
-        print("answer: ",temp)
-
-        if temp == "Stepper":
+        time.sleep(0.25)
+        if stepper_control.read == "Stepper":
             print("Stepper control active!")
         else:
             print("Stepper controll Error!")
-
+    
+    elif x == 'DC':
+        dc_control = DC_control(port)
+        time.sleep(1.5)
+        dc_control.write('identify')
+        time.sleep(1)
+        if dc_control.read() == 'DC':
+            print("DC control active!")
+        else:
+            print("DC controll Error!")
     else:
         
         print("{} not known!".format(port))
