@@ -45,14 +45,18 @@ class Stepper_control():
         self.ser.write(str.encode('run'))
     def stop(self):
         self.ser.write(str.encode('notrun')) 
+    def reset(self):
+        self.ser.write(str.encode('rst')) 
 
 stepper = Stepper_control()
 
 while True:
     lesning = input("command: ")
-    if lesning == 'calb':
+    if lesning == 'cal':
         stepper.calibrate()
     elif lesning == 'notrun':
+        stepper.stop()
+    elif lesning == 'reset':
         stepper.stop()
     elif lesning == 'run':
         stepper.run()
