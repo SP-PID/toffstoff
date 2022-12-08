@@ -51,6 +51,8 @@ class DC_control():
         self.ser.write(str.encode('calibrate'))
     def reset(self):
         self.ser.write(str.encode('reset'))
+    def id(self):
+        self.ser.write(str.encode('identify'))
     def read(self):
         x = self.ser.readline()
         x = x.decode(encoding='UTF-8',errors='strict')
@@ -65,3 +67,21 @@ class DC_control():
             return timi, Dc
         except:
             pass
+
+dc = DC_control()
+
+while True:
+    lesning = input("command: ")
+    if lesning == 'run':
+        dc.run()
+    elif lesning == 'stop':
+        dc.stop()
+    elif lesning == 'calibrate':
+        dc.calibrate()
+    elif lesning == 'reset':
+        dc.reset()
+    elif lesning == 'id':
+        dc.id()
+    else:
+        dc.set_SP(lesning)
+    print(dc.read())
