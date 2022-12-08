@@ -70,30 +70,43 @@ class DC_control():
         stopbits=serial.STOPBITS_ONE,
         bytesize=serial.EIGHTBITS,
         timeout=1)
+    
     def set_SP(self,SP_val):
         SP_val = str(SP_val)
         self.ser.write(str.encode(SP_val))
+    
     def set_P(self,P_val):
         P_val = "p" + str(P_val)
         self.ser.write(str.encode(P_val))
+    
     def set_I(self,I_val):
         I_val = "i" + str(I_val)
         self.ser.write(str.encode(I_val))
+    
     def set_D(self,D_val):
         D_val = "d" + str(D_val)
         self.ser.write(str.encode(D_val))
+    
     def run(self):
         self.ser.write(str.encode('run'))
+    
     def stop(self):
         self.ser.write(str.encode('stop'))
+    
     def calibrate(self):
         self.ser.write(str.encode('calibrate'))
+    
     def reset(self):
         self.ser.write(str.encode('reset'))
+    
     def read(self):
         x = self.ser.readline()
         x = x.decode(encoding='UTF-8',errors='strict')
         return x
+
+    def write(self, value):
+        self.ser.write(str.encode(value))
+    
     def dc_data(self):
         try:
             x = self.read()
@@ -117,18 +130,26 @@ class Stepper_control():
         stopbits=serial.STOPBITS_ONE,
         bytesize=serial.EIGHTBITS,
         timeout=1)
+    
     def set_SP(self,SP_val):
         SP_val = str(SP_val)
         self.ser.write(str.encode(SP_val))
+    
     def read(self):
         x = self.ser.readline()
         x = x.decode(encoding='UTF-8',errors='strict')
         print("stepper" + x)
         time.sleep(0.01)
+
+    def write(self, value):
+        self.ser.write(str.encode(value))
+    
     def calibrate(self):
         self.ser.write(str.encode('identify'))
+    
     def run(self):
         self.ser.write(str.encode('run'))
+    
     def stop(self):
         self.ser.write(str.encode('notrun'))    
 
@@ -337,11 +358,23 @@ for port in avableports:
     
     if x == "DC":
         dc_control = DC_control(port)
-        print("DC control active!")
+        time.sleep(1.5)
+        dc_control.write("identify")
+        time.sleep(0.25)
+        if dc_control.read == "DC":
+            print("DC control active!")
+        else:
+            print("DC controll Error!")
 
     elif x == "Stepper":
         stepper_control = Stepper_control(port)
-        print("Stepper control active!")
+        time.sleep(1.5)
+        stepper_control.write("identify")
+        time.sleep(0.25)
+        if stepper_control.read == "Stepper":
+            print("Stepper control active!")
+        else:
+            print("Stepper controll Error!")
 
     else:
         
