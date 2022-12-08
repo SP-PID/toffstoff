@@ -162,7 +162,7 @@ if (end > 0) {
       delay(1000);
       resetFunc();
     }
-if (running == true) {
+if (running == true && isdigit(new_position)) {
   new_position = readString.toInt();
   Serial.println(new_position);
   if (new_position != current_position) {
@@ -174,4 +174,5 @@ if (running == true) {
 readString = "";
 }
 }
+
 
