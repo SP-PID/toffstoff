@@ -60,9 +60,10 @@ class Estop():
 ########################## DC Controller ##########################
 
 class DC_control():
-    def __init__(self) :
+    def __init__(self, port) :
+        self.port = port
         self.ser = serial.Serial(
-        port='/dev/ttyUSB1',
+        port=self.port,
         baudrate = 115200,
         parity=serial.PARITY_NONE,
         stopbits=serial.STOPBITS_ONE,
@@ -243,14 +244,14 @@ class SaveData():
             writer.writerows(export_data)
         csvfile.close()
         ## geyma undir öðru nafni rename-a og síðan move
-        dir_path = r'/media/pipipi/' 
+        dir_path = r'/home/pipipi/Documents/PID_REGL/'
         res = []
         try:
             for (dir_path, dir_names, file_names) in os.walk(dir_path):
                 res.extend(dir_names)
                 break
             print(res)
-            old_path = r'/home/pipipi/temp.csv'
+            old_path = r'/home/pipipi/Documents/PID_REGL/temp.csv'
             new_path = r"/media/pipipi/" + res[0] + "/temp.csv"
             shutil.move(old_path, new_path)
             timestamp = datetime.now().strftime("%Y-%m-%d %H.%M.%S")
@@ -292,9 +293,63 @@ class SaveData():
         self.StoreData()
 
 ########################## Define Classes ##########################
+#def set_up_serial():
+s = serial.Serial(baudrate = 115200,timeout=1)
+avableports = []
+portNames = [
+"/dev/ttyUSB0",
+"/dev/ttyUSB1",
+"/dev/ttyUSB2",
+"/dev/ttyUSB3",
+]   
 
-dc_control = DC_control()
-stepper_control = Stepper_control()
+for pname in portNames:
+    try:
+        s.port = pname
+        s.open()
+        if s.isOpen():
+            print("Found {}.".format(pname))
+            avableports.append(pname)
+        
+    except:
+        pass
+
+    s.close()
+print(avableports)
+
+for port in avableports:
+    print("Checking port {}".format(port))
+    s.port = port
+    s.open()
+    time.sleep(1.5)
+    s.write(str.encode('identify'))
+    time.sleep(0.5)
+    x = s.readline()
+    x = x.decode(encoding='UTF-8',errors='strict')
+    x = x.strip()
+    print(x)
+    s.close()
+    
+    if x == "DC":
+        dc_control = DC_control(port)
+        print("DC control active!")
+
+    elif x == "Stepper":
+        stepper_control = Stepper_control(port)
+        print("Stepper control active!")
+
+    else:
+        
+        print("{} not known!".format(port))
+
+    time.sleep(2)
+
+######################### Define Classes ##########################
+print("fyrir")
+dc_control.calibrate()
+print("eftir")
+#dc_control = DC_control()
+#stepper_control = Stepper_control()
 live = Live()
 gv = global_val()
 savedata = SaveData()
