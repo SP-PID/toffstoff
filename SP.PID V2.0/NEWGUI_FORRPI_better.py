@@ -41,6 +41,7 @@ class Estop():
                 self.E_gluggi = Tk()
                 self.E_gluggi.columnconfigure([0,1], minsize=250)
                 self.E_gluggi.rowconfigure([0, 2], minsize=100)
+                self.E_gluggi.geometry("1024x600")
                 self.E_gluggi.attributes("-fullscreen", True)
                 self.E_gluggi.attributes("-topmost", True)
                 self.E_gluggi.configure(background= 'red')
@@ -257,7 +258,7 @@ class SaveData():
                 res.extend(dir_names)
                 break
             print(res)
-            old_path = r'/home/pipipi/temp.csv'
+            old_path = r'/home/pipipi/Documents/PID_REGL/temp.csv'
             new_path = r"/media/pipipi/" + res[0] + "/temp.csv"
             shutil.move(old_path, new_path)
             timestamp = datetime.now().strftime("%Y-%m-%d %H.%M.%S")
@@ -276,15 +277,16 @@ class SaveData():
         self.ewin = tk.Tk()
         self.ewin.columnconfigure([0,1], minsize=250)
         self.ewin.rowconfigure([0, 1], minsize=100)
-        self.ewin.attributes("-fullscreen", True)
+        #self.ewin.geometry("1024x600")
+        self.ewin.attributes("-fullscreen", False)
         self.ewin.attributes("-topmost", True)
         self.ewin.eval('tk::PlaceWindow . center')
-        label1 = tk.Label(text="USB not found", font=("Helvetica", 20))
-        label1.grid(row=0, column=0, columnspan=2)
-        label2 = tk.Button(text="retry", command=self.ewin_retry)
-        label2.grid(row=1, column=0)
-        label3 = tk.Button(text="Cancel", command= self.ewin_destroy)
-        label3.grid(row=1, column=1)
+        label12 = tk.Label(text="USB not found", font=("Helvetica", 20))
+        label12.grid(row=0, column=0, columnspan=2)
+        label22 = tk.Button(text="retry", command=self.ewin_retry)
+        label22.grid(row=1, column=0)
+        label32 = tk.Button(text="Cancel", command= self.ewin_destroy)
+        label32.grid(row=1, column=1)
         self.ewin.mainloop()
 
     def ewin_destroy(self):
@@ -349,10 +351,12 @@ for port in avableports:
         
         print("{} not known!".format(port))
 
-    time.sleep(1)
+    time.sleep(2)
 
 ########################## Define Classes ##########################
-
+# print("fyrir")
+# dc_control.calibrate()
+# print("eftir")
 #dc_control = DC_control()
 #stepper_control = Stepper_control()
 #set_up_serial()
@@ -364,6 +368,7 @@ ki = Encoders(0x37)
 kd = Encoders(0x36)
 sp = Encoders(0x3a)
 E_stop = Estop()
+
 
 ########################## Threads ##########################
 
@@ -415,10 +420,10 @@ class WriteDataThread():
         while True:
             while live.good is False:
                 self.sp = gv.sptemp
-                self.timi, self.dc = dc_control.dc_data()
+                #self.timi, self.dc = dc_control.dc_data()
                 gv.SetPoint.append(self.sp)
-                gv.DC_Motor.append(self.dc)
-                gv.Timi.append(self.timi)
+                #gv.DC_Motor.append(self.dc)
+                #gv.Timi.append(self.timi)
                 time.sleep(0.001)
             time.sleep(0.001)
 
@@ -473,11 +478,13 @@ def update():
         takki1['fg'] = "white"
         takki1['activeforeground'] = "white"
         gv.animate = False
+        takki1['text'] = "Record"        
     else:
         takki1['bg'] = "red"
         takki1['activebackground'] = "red"
         takki1['fg'] = "black"
         takki1['activeforeground'] = "black"
+        takki1['text'] = "Recording"   
         gv.animate = True
     frame3.after(50, update) # run itself again after 200 ms
 
@@ -579,29 +586,29 @@ def small_plot3(i, ys, xs):
 
     return line4,
 
+########################## LOADING SCREEN ##########################
+
+splash = Tk()
+splash.title("Loading screen")
+splash.geometry("1024x600")
+splash.attributes("-fullscreen", True)
+splash.wm_attributes("-topmost", True)
+rammi = Frame(splash, width=1024, height= 600)
+rammi.pack()
+rammi.place(anchor= 'center', relx= 0.5, rely= 0.5)
+img= ImageTk.PhotoImage(Image.open("Loading.png"))
+rammi = Label(rammi, image= img)
+rammi.pack()
+
+
+
+
 ########################## GUI STARTS ##########################
-
-
 # Constants to construct plots
 x_len = 500
 y_range = [0,800]
 x_range = [0,x_len]
 INTERVALS = 0
-
-# Create an instance of tkinter frame
-splash = Tk()
-splash.title("Loading screen")
-splash.geometry("1024x600")
-splash.attributes("-fullscreen", True)
-splash.wm_attributes("-topmost", False)
-rammi = Frame(splash, width=1024, height= 600)
-rammi.pack()
-rammi.place(anchor= 'center', relx= 0.5, rely= 0.5)
-
-img= ImageTk.PhotoImage(Image.open("Loading.png"))
-rammi = Label(rammi, image= img)
-rammi.pack()
-
 win= Tk()
 
 screen_width = win.winfo_screenwidth()
@@ -612,7 +619,7 @@ screen_height = win.winfo_screenheight()
 # run fullscreen
 win.attributes("-fullscreen", True)
 # keep on top
-win.attributes("-topmost", False)
+win.attributes("-topmost", True)
 # close window with key `ESC`
 win.bind("<Escape>", on_escape)
 # hide cursor
@@ -651,10 +658,12 @@ y1 = []
 y2 = []
 
 # call the animator.  blit=True means only re-draw the parts that have changed.
-anim = animation.FuncAnimation(figure, Big_Plot, fargs= (y1,y2,xs), init_func=init,
-                                interval=INTERVALS, blit=True)
-
-
+anim = animation.FuncAnimation(figure,
+        Big_Plot, 
+        fargs= (y1,y2,xs), 
+        init_func=init,
+        interval=INTERVALS, 
+        blit=True)
 
 ################ SMALL PLOT 1 ################
 
@@ -743,8 +752,6 @@ takki3.grid(row =3, column =6)
 
 takki4 = tk.Button(master= win,activebackground= None, text= "Reset", command= on_escape)
 takki4.grid(row =3, column =7)
-
-# run first time
 update()
 def winmain():
     splash.destroy()
