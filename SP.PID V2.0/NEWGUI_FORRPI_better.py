@@ -70,30 +70,43 @@ class DC_control():
         stopbits=serial.STOPBITS_ONE,
         bytesize=serial.EIGHTBITS,
         timeout=1)
+    
     def set_SP(self,SP_val):
         SP_val = str(SP_val)
         self.ser.write(str.encode(SP_val))
+    
     def set_P(self,P_val):
         P_val = "p" + str(P_val)
         self.ser.write(str.encode(P_val))
+    
     def set_I(self,I_val):
         I_val = "i" + str(I_val)
         self.ser.write(str.encode(I_val))
+    
     def set_D(self,D_val):
         D_val = "d" + str(D_val)
         self.ser.write(str.encode(D_val))
+    
     def run(self):
         self.ser.write(str.encode('run'))
+    
     def stop(self):
         self.ser.write(str.encode('stop'))
+    
     def calibrate(self):
         self.ser.write(str.encode('calibrate'))
+    
     def reset(self):
         self.ser.write(str.encode('reset'))
+    
     def read(self):
         x = self.ser.readline()
         x = x.decode(encoding='UTF-8',errors='strict')
         return x
+
+    def write(self, value):
+        self.ser.write(str.encode(value))
+    
     def dc_data(self):
         try:
             x = self.read()
@@ -112,22 +125,31 @@ class Stepper_control():
         self.port = port
         self.ser = serial.Serial(
         port=port,
-        baudrate = 9600,
+        baudrate = 115200,
         parity=serial.PARITY_NONE,
         stopbits=serial.STOPBITS_ONE,
         bytesize=serial.EIGHTBITS,
         timeout=1)
+    
     def set_SP(self,SP_val):
         SP_val = str(SP_val)
         self.ser.write(str.encode(SP_val))
+    
     def read(self):
         x = self.ser.readline()
         x = x.decode(encoding='UTF-8',errors='strict')
         print("stepper" + x)
+        time.sleep(0.01)
+
+    def write(self, value):
+        self.ser.write(str.encode(value))
+    
     def calibrate(self):
-        self.ser.write(str.encode('cal'))
+        self.ser.write(str.encode('identify'))
+    
     def run(self):
         self.ser.write(str.encode('run'))
+    
     def stop(self):
         self.ser.write(str.encode('notrun'))    
 
@@ -336,11 +358,23 @@ for port in avableports:
     
     if x == "DC":
         dc_control = DC_control(port)
-        print("DC control active!")
+        time.sleep(1.5)
+        dc_control.write("identify")
+        time.sleep(0.25)
+        if dc_control.read == "DC":
+            print("DC control active!")
+        else:
+            print("DC controll Error!")
 
     elif x == "Stepper":
         stepper_control = Stepper_control(port)
-        print("Stepper control active!")
+        time.sleep(1.5)
+        stepper_control.write("identify")
+        time.sleep(0.25)
+        if stepper_control.read == "Stepper":
+            print("Stepper control active!")
+        else:
+            print("Stepper controll Error!")
 
     else:
         
@@ -349,9 +383,12 @@ for port in avableports:
     time.sleep(2)
 
 ########################## Define Classes ##########################
-# print("fyrir")
-# dc_control.calibrate()
-# print("eftir")
+print("fyrir")
+#stepper_control.run()
+
+time.sleep(0.1)
+stepper_control.calibrate()
+print("eftir")
 #dc_control = DC_control()
 #stepper_control = Stepper_control()
 #set_up_serial()
@@ -430,8 +467,15 @@ class Drive_stepper_motor_thread():
         self._running = False
 
     def run(self):
+
+        stepper_control.run()
+        oldsp = 0
         while True:
-            stepper_control.set_SP(gv.sp)
+            if oldsp != gv.sp:           
+                stepper_control.set_SP(gv.sp)
+                oldsp = gv.sp
+                print(gv.sp)
+            time.sleep(0.000001)
 
 class Drive_DC_motor_thread():
     def __init__(self):
@@ -451,6 +495,10 @@ get_values.start()
 writedata_thread =  WriteDataThread()
 writedata_thread = Thread(target= writedata_thread.run)
 writedata_thread.start()
+
+stepper_thread = Drive_stepper_motor_thread()
+stepper_thread = Thread(target= stepper_thread.run)
+stepper_thread.start()
 
 ########################## GUI Functions ##########################
 
