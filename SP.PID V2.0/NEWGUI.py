@@ -200,7 +200,9 @@ def Big_Plot(i, y1, y2,xs):
 
 #for index in range(0,1):
     for lnum,line in enumerate(lines):
-        line.set_data(xs, ylist[lnum]) # set data for each line separately. 
+        line.set_ydata(ylist[lnum])
+        line.set_xdata(xs) 
+         # set data for each line separately. 
     return lines
 
 # function for live animation on small graph no 1
@@ -353,16 +355,16 @@ anim = animation.FuncAnimation(figure, Big_Plot, fargs= (y1,y2,xs), init_func=in
 
 plot2 = figure.add_subplot(gs[1:10,31:40])
 #xs = list(range(0,x_len))
-xs = []
-ys = []
+xc = []
+yc = []
 plot2.set_ylim(y_range)
 plot2.set_xlim(x_range)
 plot2.set_title('PWM', rotation='vertical',x=1.1,y=0.3)
-line2, = plot2.plot(xs,ys, color= "red")
+line2, = plot2.plot(xc,yc, color= "red")
 
 ani2 = animation.FuncAnimation(figure,
     small_plot1,
-    fargs=(ys,xs,),
+    fargs=(yc,xc,),
     interval=INTERVALS,
     blit=True)
 
@@ -397,6 +399,7 @@ ani4 = animation.FuncAnimation(figure,
         fargs=(yb,xb,),
         interval=INTERVALS,
         blit=True)
+
 
 ###############################################################################
 

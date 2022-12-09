@@ -62,6 +62,7 @@ class Estop():
 
 class DC_control():
     def __init__(self, port) :
+        self.last_data = 0
         self.port = port
         self.ser = serial.Serial(
         port=self.port,
@@ -111,13 +112,14 @@ class DC_control():
     def dc_data(self):
         try:
             x = self.read()
-            x = x.split(" ")
+            x = x.split(",")
             Dc = int(x[1])
             timi = int(x[0])
+            self.last_data = Dc
             print(x)
-            return timi, Dc
+            return Dc
         except:
-            pass
+            return self.last_data
 
 ########################## Stepper Controller ##########################
 
@@ -394,8 +396,9 @@ print("fyrir")
 #stepper_control.run()
 
 time.sleep(0.1)
-stepper_control.calibrate()
+dc_control.calibrate()
 print("eftir")
+time.sleep(5)
 #dc_control = DC_control()
 #stepper_control = Stepper_control()
 #set_up_serial()
@@ -422,6 +425,7 @@ class get_values_thread():
         kpold = kp.Get_enc_val()
         kiold = ki.Get_enc_val()
         kdold = kd.Get_enc_val() 
+        dc_control.run()
         while True:
             gv.sptemp = sp.get_setpoint() * 10
             #print(gv.sptemp)
@@ -433,8 +437,8 @@ class get_values_thread():
             #print(gv.sptemp)
             if not sp.button.value and not  sp.button_held:
                 gv.sp = gv.sptemp
-                dc_control.set_SP(gv.sptemp)
-                stepper_control.set_SP(gv.sptemp)
+                dc_control.set_SP(gv.sp)
+                stepper_control.set_SP(gv.sp)
             if kpold != kptemp:
                 gv.kp = kptemp
                 kpold = kptemp
@@ -466,25 +470,7 @@ class WriteDataThread():
                 time.sleep(0.001)
             time.sleep(0.001)
 
-class Drive_stepper_motor_thread():
-    def __init__(self):
-        self._running = True
-
-    def terminate(self):
-        self._running = False
-
-    def run(self):
-
-        stepper_control.run()
-        oldsp = 0
-        while True:
-            if oldsp != gv.sp:           
-                stepper_control.set_SP(gv.sp)
-                oldsp = gv.sp
-                print(gv.sp)
-            time.sleep(0.000001)
-
-class Drive_DC_motor_thread():
+class Read_DC_motor_thread():
     def __init__(self):
         self._running = True
 
@@ -493,7 +479,9 @@ class Drive_DC_motor_thread():
 
     def run(self):
         while True:
-            pass
+            place = dc_control.dc_data()
+            print(place)
+            gv.POS = place
 
 get_values = get_values_thread()
 get_values = Thread(target= get_values.run)
@@ -503,9 +491,12 @@ writedata_thread =  WriteDataThread()
 writedata_thread = Thread(target= writedata_thread.run)
 writedata_thread.start()
 
-stepper_thread = Drive_stepper_motor_thread()
-stepper_thread = Thread(target= stepper_thread.run)
-stepper_thread.start()
+DC_read = Read_DC_motor_thread()
+DC_read = Thread(target= DC_read.run)
+DC_read.start()
+
+
+
 
 ########################## GUI Functions ##########################
 
@@ -550,7 +541,7 @@ def Big_Plot(i, y1, y2,xs):
         y = gv.sp
         y1.append(y)
         
-        y = random.randint(100,200)
+        y = gv.POS # random.randint(100,200)
         y2.append(y)
         if gv.xstemp < x_len - 1:
             gv.xstemp += 1
@@ -655,7 +646,7 @@ rammi.pack()
 
 ########################## GUI STARTS ##########################
 # Constants to construct plots
-x_len = 500
+x_len = 200
 y_range = [0,800]
 x_range = [0,x_len]
 INTERVALS = 0
