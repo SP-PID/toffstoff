@@ -262,9 +262,9 @@ void run(){
   //}
 
    if (pos_old != pos){
-    //Serial.print(millis());
-    //Serial.print(',');
-    //Serial.println(pos);
+    Serial.print(millis());
+    Serial.print(',');
+    Serial.println(pos);
     //Serial.print(u);
     //Serial.print(',');
     //Serial.println(pwr);
@@ -278,10 +278,10 @@ void run(){
   eprev = e;
   
  
-  Serial.print(target);
-  Serial.print(" ");
-  Serial.println(pos);
-  Serial.println();
+  //Serial.print(target);
+  //Serial.print(" ");
+  //Serial.println(pos);
+  //Serial.println();
 }}
 
 void setMotor(int dir, int pwmVal, int in1, int in2){
